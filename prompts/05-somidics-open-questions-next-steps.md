@@ -1,19 +1,24 @@
-# Somidics: Open Questions & Next Steps
+# Somidics: Open Questions & Next Steps (v0.4 Updated)
 
 ## Status Summary
 
-### What We've Defined (v0.1)
+### What We've Defined (v0.4)
 
 ✅ **Core concept:** Somidion-based identification using body marks
-✅ **Terminology:** Somidion, somid, somidic, somidics
-✅ **Encoding scheme:** 10-bit somid (zone + type + size + texture)
-✅ **CRC validation:** CRC-8 for error detection
+✅ **Terminology:** Somidion, somid, somidic, somidics, anti-somidion, anti-somid, anti-somidic
+✅ **Encoding scheme:** 13-bit somid (zone + type + size + texture + multiplicity/special)
+✅ **Anti-somidics:** 8-bit flag encoding for negative assertions (NEW in v0.4)
+✅ **CRC validation:** CRC-5 for positive somidics (anti-somidics use flag validation)
 ✅ **Plane architecture:** Humans (Plane 0), Animals (Plane 1), Reserved (Plane 2), Special (Plane 3)
-✅ **32 public zones:** Fingers, hands, arms, face, ears, neck
-✅ **Notation:** @ prefix, colon-separated, canonical ordering
+✅ **48 public zones:** Fingers (20), hands (8), arms (6), face (10), ears & neck (4)
+✅ **Notation:** @ prefix for multiple positives, hyphen for anti-somidics, colon-separated, canonical ordering
+✅ **Anti-zone design:** 4 broad zones (hands+fingers+wrists, face, ears, neck)
+✅ **Maximal compaction:** Anti-somidics automatically compacted to minimum count
+✅ **Verifier discretion:** Anti-somidics always optional from verifier's perspective (NEW in v0.4)
+✅ **Override principle:** Positive somidics create exceptions to anti-somidics (NEW in v0.4)
 ✅ **Design rationale:** Why each decision was made
-✅ **Evaluation framework:** 11 success criteria assessed
-✅ **Use cases:** 5 detailed scenarios
+✅ **Evaluation framework:** 11 success criteria assessed (updated for v0.4)
+✅ **Use cases:** 6 detailed scenarios (credit card significantly enhanced, professional credentials added)
 
 ### What Remains Open
 
@@ -25,42 +30,49 @@ This document captures unresolved questions, design alternatives under considera
 
 **Question:** Should certain zones use attribute bits differently for higher precision?
 
-**Current status:** v0.1 uses uniform attribute encoding (type/size/texture) for all zones
+**Current status:** v0.4 uses context-dependent encoding (bit 12 varies by type/texture context)
 
-**Alternatives:**
+**Already implemented context-dependent features (v0.3-v0.4):**
+- Bit 12 means "multiplicity" for natural marks and scars
+- Bit 12 means "writing indicator" for tattoos
+- Bit 12 means "intensifier" for anomalous features
+- Texture bits repurposed for missing/anomalous subtypes
 
-**Option A: Uniform encoding (current)**
-- Same bits mean same thing for all zones
+**Still under consideration:**
+
+**Option A: Uniform encoding (current baseline)**
+- Context-dependent variations already in place
+- Same bits mean same thing within type/texture contexts
 - Simpler to implement and explain
-- Some zones are less precise than optimal
+- Some zones still less precise than optimal
 
 **Option B: Zone-specific encoding**
 - Hands encode quadrants (thumb-side, pinky-side, finger-side, wrist-side)
 - Face encodes detailed subzones (13+ facial regions)
-- Fingers encode segment (tip, middle, base) and side (pad, back)
+- Would require additional context flag
 - More efficient but more complex
 
-**Option C: Hybrid with flag bit**
-- Bit 5 (first attribute bit) signals "zone-specific encoding"
-- If 0: standard attributes
-- If 1: zone-specific interpretation
+**Option C: Hybrid with zone flag**
+- Use reserved bit to signal "zone-specific encoding"
 - Allows gradual addition of zone-specific encodings
+- Maintains backward compatibility
 
 **Considerations:**
 - Complexity vs. precision tradeoff
 - Implementation difficulty
 - User comprehension
 - Future extensibility
+- **V0.4 note:** Anti-somidics already provide discrimination boost, reducing urgency
 
 **Recommendation needed:** Empirical testing to determine if precision gain justifies complexity
 
-**Timeline:** Could be added in v0.2 without breaking v0.1 compatibility (if designed carefully)
+**Timeline:** Could be added in future version without breaking v0.4 compatibility (if designed carefully)
 
 ### 2. Private Somidics Specification
 
 **Question:** What should the private zone map include?
 
-**Current status:** Zone bit pattern 11111 reserved for private use, but no specification exists
+**Current status:** Zones 48-63 reserved for private use, but no specification exists
 
 **Potential private zones:**
 - Torso (chest, abdomen, back)
@@ -78,9 +90,10 @@ This document captures unresolved questions, design alternatives under considera
 
 **Design questions:**
 - Should private zones use same attribute encoding?
-- How many private zones needed? (32 available in 5 bits)
+- How many private zones needed? (16 available)
 - Should there be sub-flags (medical vs. forensic vs. security)?
 - What are the privacy/consent implications?
+- **NEW v0.4:** Should private zones have corresponding anti-zones?
 
 **Who should define this?**
 - Medical examiner associations?
@@ -88,7 +101,9 @@ This document captures unresolved questions, design alternatives under considera
 - International standards body?
 - Legal framework needed first?
 
-**Timeline:** Not urgent for v0.1 public release, but should be addressed before v1.0
+**Timeline:** Not urgent for v1.0 public release, but should be addressed before v2.0
+
+**V0.4 consideration:** Anti-somidics make private zones less urgent for public credentials (can use public zones + anti for good discrimination).
 
 ### 3. Animal Somidics Design
 
@@ -108,7 +123,7 @@ This document captures unresolved questions, design alternatives under considera
 - Bits 0-3: Animal class (16 types: dog, cat, horse, cattle, sheep, etc.)
 - Bits 4-5: Gender (4 options: male, female, neutered-male, spayed-female)
 - Bits 6-8: Body zone (8 zones: head, neck, body, tail, legs, feet, ears)
-- Bits 9-10: Mark type (4 types: natural, brand, tag, other)
+- Bits 9-12: Mark type/attributes
 
 **Challenges:**
 - Species variation enormous
@@ -129,40 +144,19 @@ This document captures unresolved questions, design alternatives under considera
 
 **Timeline:** Separate working group needed, not blocking human somidics v1.0
 
-### 4. Negative Somidics
+**V0.4 note:** Anti-somidics concept may not translate well to animals (different marking patterns).
 
-**Question:** Should we support assertions about marks NOT present?
-
-**Original idea:** "I have a tattoo on front of neck BUT NOT on back of neck"
-
-**Potential encoding:**
-- Use a special zone flag?
-- Add a "negative" bit to attribute encoding?
-- Create separate somidic that encodes absence?
-
-**Use case:**
-- Slightly more identifying (eliminates some population)
-- Could distinguish twins (one has mark, other doesn't)
-- Unusual but potentially useful edge case
-
-**Challenges:**
-- More complex to explain
-- Lower discrimination value (negative info less useful)
-- Verification awkward ("Show me you DON'T have X")
-- Might be confusing
-
-**Recommendation:** Defer to v2.0 or later, not essential for v0.1
-
-### 5. Composite Somidions (Single Somidic Encoding Multiple Marks)
+### 4. Composite Somidions (Single Somidic Encoding Multiple Marks)
 
 **Question:** Should one somidic encode multiple marks, or use multiple somidics?
 
 **Current approach:** Multiple marks = multiple somidics with @ notation
 - Example: `@147293:582047` encodes two separate marks
+- v0.4: Can combine with anti-somidics: `@147293:582047-cf`
 
 **Alternative:** Encode 2-3 marks in a single somidic
 - Lose CRC bits to gain space for second mark
-- Example: 5 bits first somid + 5 bits second somid + 8 bits joint CRC
+- Example: 6 bits first somid + 6 bits second somid + 6 bits joint attributes + 0 CRC
 - More compact but less flexible
 
 **Tradeoffs:**
@@ -171,26 +165,38 @@ This document captures unresolved questions, design alternatives under considera
 - ✅ Flexible (use 1, 2, 3, or more)
 - ✅ Strong CRC per mark
 - ✅ Can mix human + animal (future)
+- ✅ **Can combine with anti-somidics flexibly** (v0.4)
 - ❌ More digits to communicate
 
 **Alternative (composite):**
 - ✅ Fewer total digits
 - ✅ Atomic (can't separate marks)
 - ❌ Fixed number of marks per somidic
-- ❌ Weaker error detection
+- ❌ Weaker/no error detection
 - ❌ Less flexible
+- ❌ **Would complicate anti-somidic integration**
 
 **Recommendation:** Keep current approach (multiple somidics), simpler and more flexible
 
-### 6. Somidic Rotation and Revocation
+**V0.4 note:** Anti-somidics provide an alternative path to higher discrimination without multiple positives, reducing pressure for composite encoding.
+
+### 5. Somidic Rotation and Revocation
 
 **Question:** How should credential systems handle somidic changes?
 
 **Scenarios requiring change:**
+
+**Positive somidics:**
 - Mark removed (tattoo removal, mole removed)
 - Mark added (new large scar overshadows old somidion)
 - Privacy concerns (want to use different mark)
 - Mark becomes culturally inappropriate
+
+**Anti-somidics (NEW considerations in v0.4):**
+- Getting new tattoo in excluded zone → invalidates anti-somidic
+- Getting new piercing in excluded zone → invalidates anti-somidic
+- Removing tattoo → might enable new anti-somidic
+- **Advantage:** Can update just anti-somidic portion
 
 **Options:**
 
@@ -204,56 +210,77 @@ This document captures unresolved questions, design alternatives under considera
 - Keep credential, update somidic field
 - Digital credentials can be updated
 - Requires revocation of old somidic
+- **V0.4:** Can selectively update positive or anti portions
 
 **Option C: Multiple somidics with validity dates**
 - Credential contains multiple somidics
 - Each with "valid from" date
 - Gradual transition supported
 
+**Option D: Modular updates (NEW v0.4 consideration)**
+- Positive somidics and anti-somidics tracked separately
+- Can update anti-somidics without touching positive
+- Example: `147293-41` → `147293` (just drop anti if get hand tattoo)
+- Simpler than full reissuance
+
 **Questions:**
 - How to prevent fraud (claiming mark changed to evade)?
 - Should old somidic remain in revocation list?
 - What verification does re-enrollment require?
+- **NEW v0.4:** Should anti-somidic updates be easier than positive updates?
 
-**Recommendation needed:** Standardize revocation/rotation protocol
+**Recommendation needed:** Standardize revocation/rotation protocol, consider modular updates
 
-### 7. Verification Strictness Levels
+**V0.4 insight:** Anti-somidics are more likely to change than positive somidics (easier to get tattoo than to change birthmark), so modular updates are valuable.
+
+### 6. Verification Strictness Levels
 
 **Question:** Should verifiers use different strictness thresholds?
 
 **Current approach:** Human judgment, "if close enough, accept"
+**V0.4 addition:** Verifier discretion on checking anti-somidics
 
 **Alternative:** Define strictness levels
 
 **Level 1 (Permissive):**
 - Any reasonable interpretation accepted
+- Check positive only, skip anti-somidics
 - Used for low-value transactions
 - Example: Library card, gym membership
+- Time: 30 seconds
 
 **Level 2 (Standard):**
 - Verifier should be reasonably confident
+- Check positive, optionally check first anti-somidic
 - Used for medium-value transactions
 - Example: Credit card, prescription pickup
+- Time: 45-60 seconds
 
 **Level 3 (Strict):**
 - Very close match required
+- Check positive and all anti-somidics
 - May require second opinion
 - Used for high-value transactions
 - Example: Border control, legal identity
+- Time: 90-120 seconds
 
 **Implementation:**
-- Credential encodes required strictness level
+- Credential encodes required minimum strictness level
 - Verifier software displays appropriate guidance
 - Training materials differ by level
+- **V0.4:** Anti-somidic checking integrated into levels
 
 **Questions:**
 - Who sets the strictness level (issuer, holder, verifier)?
 - How to audit strictness compliance?
 - Does this undermine simplicity?
+- **NEW v0.4:** How to balance strictness with verifier discretion principle?
 
-**Recommendation:** Start without levels, add if empirical evidence shows need
+**Recommendation:** V0.4's verifier discretion may be sufficient, add formalized levels only if empirical evidence shows need
 
-### 8. Machine-Assisted Verification
+**V0.4 note:** The verifier discretion principle already enables context-appropriate verification without formal strictness levels.
+
+### 7. Machine-Assisted Verification
 
 **Question:** Should we add computer vision as an OPTIONAL aid (not replacement)?
 
@@ -272,6 +299,7 @@ This document captures unresolved questions, design alternatives under considera
 - Consistent suggestions
 - Training aid for verifiers
 - Could work for remote verification
+- **V0.4:** Could help verify anti-somidics (scan for tattoos)
 
 **Challenges:**
 - Requires equipment (camera)
@@ -279,62 +307,66 @@ This document captures unresolved questions, design alternatives under considera
 - Potential bias in CV system
 - Privacy concerns (storing mark images?)
 - Undermines equipment-free principle
+- **V0.4:** Anti-somidic scanning might be harder for CV (absence detection)
 
 **Recommendation:** Keep as future research direction, not in core spec
 - Core spec remains equipment-free
 - Optional CV extension for those who want it
 - Must preserve human-in-the-loop
+- **V0.4:** May be more useful for positive verification than anti-somidics
+
+**Timeline:** Research project, not v1.0
 
 ## Technical Implementation Questions
 
-### 9. CRC-8 Parameter Details
-
-**Question:** Should we specify exact CRC-8 algorithm parameters?
-
-**Current status:** "Standard CRC-8 with polynomial 0x07"
-
-**Need to specify:**
-- Initial value: 0x00 or 0xFF?
-- Final XOR: 0x00 or 0xFF?
-- Input reflection: true or false?
-- Output reflection: true or false?
-- Bit order: MSB or LSB first?
-
-**Recommendation:** 
-```
-Polynomial: 0x07 (x^8 + x^2 + x + 1)
-Initial value: 0x00
-Final XOR: 0x00
-Input reflection: false
-Output reflection: false
-Process bits: MSB to LSB
-```
-
-**Rationale:** Simplest configuration, widely supported
-
-**Action item:** Add to specification with test vectors
-
-### 10. Test Vectors and Reference Implementation
+### 8. Test Vectors and Reference Implementation
 
 **Question:** What test vectors should specification include?
 
 **Needed:**
-- Known somidion → somid → CRC → somidic (full pipeline)
-- Edge cases (zone 31, type combinations)
-- Multiple somidics encoding/decoding
-- Invalid somidics that should fail CRC
 
-**Example test vector:**
+**Positive somidics:**
+- Known somidion → somid → CRC-5 → somidic (full pipeline)
+- Edge cases (zone 47, type combinations)
+- Multiple somidics encoding/decoding
+- Invalid somidics that should fail CRC-5
+
+**Anti-somidics (NEW v0.4):**
+- Known anti-somidion → anti-somid → hex encoding
+- Flag combination examples
+- Maximal compaction examples
+- Invalid anti-somidics (nibble = 0)
+- Combined positive+anti examples
+
+**Example test vector (positive):**
 ```
-Somidion: Raised natural mark on left forearm, coin-sized
-Zone: 10000 (left forearm)
-Type: 00 (natural mark)
+Somidion: Raised natural mark on left forearm, coin-sized, single
+Zone: 30 (left forearm) = 011110
+Type: 00 (natural)
 Size: 10 (coin-sized)
 Texture: 01 (raised)
-Somid: 0b1000000010 = 514 (decimal)
-CRC-8: [to be computed]
+Multiplicity: 0 (single)
+Somid: 0b0111100010010 = 3858 (decimal)
+CRC-5: [to be computed]
 Combined: [to be computed]
 Somidic: [to be computed as 6-digit decimal]
+```
+
+**Example test vector (anti-somidic):**
+```
+Anti-somidion: No tattoos on hands, fingers, wrists
+Anti-zone: 0001 (hands+fingers+wrists)
+Anti-type: 0100 (tattoos)
+Anti-somid: 0b01000001 = 0x41
+Anti-somidic: 41 (2 hex digits)
+```
+
+**Example test vector (combined):**
+```
+Full credential: "Mole on left wrist, no tattoos on hands"
+Positive: 147293
+Anti: 41
+Encoded: 147293-41
 ```
 
 **Reference implementation:**
@@ -345,7 +377,13 @@ Somidic: [to be computed as 6-digit decimal]
 
 **Action item:** Create test vectors and reference implementations in multiple languages
 
-### 11. Credential Storage Format
+**V0.4 additions:**
+- Anti-somidic encoding/decoding test vectors
+- Maximal compaction algorithm test cases
+- Override principle test scenarios
+- Combined positive+anti test vectors
+
+### 9. Credential Storage Format
 
 **Question:** How should somidics be stored in digital credentials?
 
@@ -354,25 +392,27 @@ Somidic: [to be computed as 6-digit decimal]
 **Option A: Plaintext somidic**
 ```json
 {
-  "somidic": "147293"
+  "somidic": "147293-41"
 }
 ```
 - Simple, clear
 - ⚠️ Verifier sees somidic directly
+- **V0.4:** Anti-somidics visible too
 
 **Option B: Hashed somidic**
 ```json
 {
-  "somidic_hash": "sha256_hash_of_147293"
+  "somidic_hash": "sha256_hash_of_147293-41"
 }
 ```
 - More private
 - ❌ How does verifier decode to get description?
+- **V0.4:** Loses ability to decode anti-somidics
 
 **Option C: Encrypted somidic**
 ```json
 {
-  "somidic": "encrypted_147293",
+  "somidic": "encrypted_147293-41",
   "encryption": "verifier_public_key"
 }
 ```
@@ -382,70 +422,124 @@ Somidic: [to be computed as 6-digit decimal]
 **Option D: Progressive disclosure**
 ```json
 {
-  "somidic_zone": "encrypted_left_forearm",
-  "somidic_full": "encrypted_147293"
+  "somidic_positive": "encrypted_147293",
+  "somidic_anti": "encrypted_41"
 }
 ```
-- Reveal zone first, full details only if needed
+- Reveal positive first, anti only if needed
 - More complex but better privacy
+- **V0.4:** Aligns with modular update principle
 
-**Recommendation:** Start with Option A (plaintext), add privacy-enhancing options in future versions
+**Option E: Structured format (NEW v0.4)**
+```json
+{
+  "somidic": {
+    "positives": ["147293", "582047"],
+    "antis": ["41"],
+    "version": "0.4"
+  }
+}
+```
+- Clear separation of positive and anti
+- Enables modular updates
+- Easy to add/remove antis
+
+**Recommendation:** Start with Option A (plaintext) for v1.0, add privacy-enhancing options in future versions. Consider Option E for clarity.
+
+**V0.4 consideration:** Structured format enables modular updates and makes anti-somidic handling clearer.
 
 **Related question:** Should somidic be in claim or presentation layer?
 
-### 12. Multi-Somidic Cardinality
+### 10. Multi-Somidic Cardinality
 
 **Question:** What's the maximum useful number of somidics in a set?
 
 **Current:** Unlimited (syntax supports N somidics)
 
 **Considerations:**
-- 1 somidic: ~1-in-1,000 (casual fraud prevention)
-- 2 somidics: ~1-in-1,000,000 (good identification)
+
+**Positive somidics:**
+- 1 somidic: ~1-in-3,300 (casual fraud prevention)
+- 2 somidics: ~1-in-10-million (good identification)
 - 3 somidics: ~1-in-1-billion (strong identification)
 - 4+ somidics: Diminishing returns, increasingly intrusive
 
+**Anti-somidics (NEW v0.4):**
+- 1 anti with 1 positive: ~1-in-15,000+ (excellent for medium security)
+- 2 antis with 1 positive: ~1-in-30,000+ (very good)
+- 1 anti with 2 positives: ~1-in-60-million (high security)
+- Multiple antis: Maximal compaction reduces to 1-4 typically
+
 **Practical limits:**
+
+**Positive somidics:**
 - Verification time: 30 seconds × N
 - User comfort: Showing 5+ marks intrusive
 - Finding suitable marks: Hard to find 4+ good marks
 
+**Anti-somidics:**
+- Verification time: 20-60 seconds × N (depending on zones)
+- User comfort: Less intrusive (no specific mark shown)
+- Finding suitable antis: Most people have some exclusions
+
 **Recommendation:** 
-- Support 1-5 somidics technically
-- Recommend 1-3 for most use cases
+- Support 1-5 positive somidics technically
+- Support 1-4 anti-somidics (maximal compaction limits naturally)
+- Recommend 1-2 positives + 0-2 antis for most use cases
 - Document tradeoffs
 
-### 13. Error Messages and User Feedback
+**V0.4 strategic insight:** Anti-somidics provide excellent discrimination boost per unit of intrusiveness. One positive + one anti may be optimal balance for many use cases.
+
+### 11. Error Messages and User Feedback
 
 **Question:** What should users see when somidic fails validation?
 
 **Scenarios:**
 
-**Scenario A: Invalid CRC**
+**Scenario A: Invalid CRC (positive somidic)**
 - Technical issue or typo
 - Message: "This code is invalid. Please check the number."
 - Don't reveal CRC internals to user
 
-**Scenario B: Mark doesn't match**
+**Scenario B: Invalid anti-somidic format (NEW v0.4)**
+- Nibble = 0 in anti-somidic
+- Message: "This code format is incorrect. Please contact issuer."
+- Rare (should not happen with proper encoding)
+
+**Scenario C: Positive mark doesn't match**
 - Potential fraud or mark changed
 - Message: "Unable to verify this mark. Please contact issuer."
 - Log for fraud detection
 
-**Scenario C: Mark changed (legitimate)**
+**Scenario D: Anti-somidic violation (NEW v0.4)**
+- Person has marks in excluded zones
+- Message: "Your body marks have changed. Please update your credential."
+- Could be fraud or legitimate change (got tattoo)
+- **Different tone than positive mismatch** (more understandable)
+
+**Scenario E: Mark changed (legitimate)**
 - User reports mark removed/changed
 - Message: "We'll need to update your credential. Please re-enroll."
 - Provide clear re-enrollment path
+- **V0.4:** May only need to update anti portion
 
-**Scenario D: Cultural/comfort issue**
+**Scenario F: Cultural/comfort issue**
 - User uncomfortable showing mark
 - Message: "Would you prefer a same-gender verifier or private area?"
 - Provide accommodation options
 
-**Action item:** Develop comprehensive error message guidelines
+**Scenario G: Verifier uncertain about anti-somidic (NEW v0.4)**
+- Small ambiguous mark might be tattoo
+- Message: "If uncertain, accept. Anti-somidics use benefit of doubt."
+- Training emphasis on permissiveness
+
+**Action item:** Develop comprehensive error message guidelines including v0.4 anti-somidic scenarios
+
+**V0.4 note:** Anti-somidic violations should be treated as potentially legitimate changes (person got tattoo) rather than definite fraud.
 
 ## Standardization and Governance
 
-### 14. Standards Body Engagement
+### 12. Standards Body Engagement
 
 **Question:** Which standards organizations should be involved?
 
@@ -468,6 +562,7 @@ Somidic: [to be computed as 6-digit decimal]
 - Decentralized Identifiers
 - Pros: Digital credential focus
 - Cons: Web-centric
+- **V0.4:** Anti-somidics align well with progressive disclosure
 
 **FIDO Alliance:**
 - Authentication standards
@@ -485,16 +580,30 @@ Somidic: [to be computed as 6-digit decimal]
 2. Engage W3C VC group (digital credentials)
 3. Approach ISO for international standard (long-term)
 
-### 15. Open Source Implementation
+**V0.4 consideration:** Anti-somidics' verifier discretion principle aligns well with W3C progressive disclosure concepts.
+
+### 13. Open Source Implementation
 
 **Question:** Should there be an official open-source reference implementation?
 
 **Components needed:**
+
+**Positive somidics:**
 - Encoding library (somidion → somidic)
 - Decoding library (somidic → description)
-- CRC-8 implementation
+- CRC-5 implementation
 - Validation functions
-- Test vectors
+
+**Anti-somidics (NEW v0.4):**
+- Flag encoding/decoding
+- Maximal compaction algorithm
+- Override principle implementation
+- Anti-somidic validation
+
+**Combined features:**
+- Combined notation parsing/generation
+- Canonical ordering
+- Complete test suite
 
 **Languages:**
 - Python (specification reference)
@@ -515,7 +624,12 @@ Somidic: [to be computed as 6-digit decimal]
 
 **Recommendation:** Create reference implementations, host on GitHub, establish governance
 
-### 16. Patent and IP Considerations
+**V0.4 additions:**
+- Anti-somidic encoding/decoding modules
+- Maximal compaction algorithm (well-specified)
+- Test vectors for combined positive+anti
+
+### 14. Patent and IP Considerations
 
 **Question:** Should somidics be patented, or kept as open standard?
 
@@ -528,6 +642,7 @@ Somidic: [to be computed as 6-digit decimal]
 - Prevents others from patenting
 - Pros: Protection from patent trolls
 - Cons: Creates perception of control
+- **V0.4:** Would need to include anti-somidics in patent
 
 **Option B: Publish as prior art**
 - Academic paper + open specification
@@ -545,10 +660,13 @@ Somidic: [to be computed as 6-digit decimal]
 - Academic paper establishes prior art
 - Open specification prevents lock-in
 - Encourage wide adoption
+- **V0.4:** Anti-somidics published in same paper
+
+**Timeline:** Academic paper submission should happen before significant commercial interest
 
 ## Research Questions
 
-### 17. Inter-Rater Reliability Studies
+### 15. Inter-Rater Reliability Studies
 
 **Question:** How reliably do different verifiers agree on matches?
 
@@ -557,22 +675,30 @@ Somidic: [to be computed as 6-digit decimal]
 - 10+ verifiers evaluate each
 - Measure agreement rates
 - Identify factors affecting agreement
+- **NEW v0.4:** Include anti-somidic verification agreement
 
 **Hypotheses:**
 - Agreement higher for obvious marks (large, high contrast)
 - Agreement lower at size/texture boundaries
 - Training improves agreement
 - Cultural background affects interpretation
+- **NEW v0.4:** Anti-somidic agreement may be higher (clearer criteria)
 
 **Metrics:**
 - Cohen's kappa (inter-rater agreement)
 - False positive rate
 - False negative rate
 - Time to decision
+- **NEW v0.4:** Anti-somidic agreement rates separately
 
 **Funding needed:** Academic research grant
 
-### 18. Cross-Cultural Acceptability Research
+**V0.4 additions:**
+- Separate metrics for positive vs. anti verification
+- Agreement on when to check anti-somidics (verifier discretion)
+- Effect of anti-somidics on overall confidence
+
+### 16. Cross-Cultural Acceptability Research
 
 **Question:** How do different cultures respond to somidic verification?
 
@@ -581,12 +707,14 @@ Somidic: [to be computed as 6-digit decimal]
 - Survey acceptance of different zones
 - Observe actual verification interactions
 - Document cultural adaptations
+- **NEW v0.4:** Test anti-somidic acceptability specifically
 
 **Questions:**
 - Which zones are universally acceptable?
 - Where is same-gender verification required?
 - How do religious norms affect adoption?
 - Are there zones we missed or shouldn't include?
+- **NEW v0.4:** Are anti-somidics MORE acceptable in conservative cultures?
 
 **Methodology:**
 - Ethnographic observation
@@ -598,8 +726,11 @@ Somidic: [to be computed as 6-digit decimal]
 - Updated zone recommendations
 - Cultural guidance document
 - Training materials for verifiers
+- **NEW v0.4:** Anti-somidic cultural acceptability findings
 
-### 19. Real-World Discrimination Rates
+**V0.4 hypothesis:** Anti-zone 0 (hands+fingers+wrists) may be MORE culturally acceptable than many positive zones since hands are visible even with conservative dress.
+
+### 17. Real-World Discrimination Rates
 
 **Question:** What percentage of population can be distinguished?
 
@@ -608,21 +739,31 @@ Somidic: [to be computed as 6-digit decimal]
 - Compute actual somidics
 - Measure collision rates
 - Analyze distribution across zones/attributes
+- **NEW v0.4:** Measure tattoo/piercing prevalence for anti-somidic discrimination
 
 **Questions:**
 - Are some zone/type combinations more common?
 - Does discrimination vary by population (age, ethnicity, geography)?
 - How many people have NO suitable somidions?
 - Are there unexpected patterns?
+- **NEW v0.4:** What percentage have no tattoos/piercings (by zone)?
+- **NEW v0.4:** How does tattoo prevalence vary by age/geography/culture?
 
 **Challenges:**
 - Privacy of collecting body mark data
 - Representative sampling difficult
 - Cultural sensitivity needed
+- **NEW v0.4:** Collecting tattoo/piercing data sensitive
 
 **Expected outcome:** Empirical entropy measurements, update theoretical model
 
-### 20. Longitudinal Stability Study
+**V0.4 specific questions:**
+- Measured discrimination improvement with anti-somidics
+- Anti-somidic effectiveness by population
+- Optimal anti-somidic combinations
+- Population segments where anti-somidics most effective
+
+### 18. Longitudinal Stability Study
 
 **Question:** How stable are somidions over 5, 10, 20 years?
 
@@ -631,61 +772,126 @@ Somidic: [to be computed as 6-digit decimal]
 - Follow-up at 1, 5, 10 years
 - Measure change rates
 - Document reasons for changes
+- **NEW v0.4:** Track anti-somidic invalidation rates (getting tattoos)
 
 **Metrics:**
 - Percentage requiring re-enrollment
 - Types of changes (removal, new marks, fading)
 - Stability by mark type
 - Age effects
+- **NEW v0.4:** Anti-somidic invalidation rates and reasons
 
 **Expected outcome:** 
 - Reissuance rate estimates
 - Mark type recommendations
 - Stability guidelines
+- **NEW v0.4:** Anti-somidic update frequency vs. positive update frequency
 
 **Timeline:** Long-term study, preliminary results in 1-2 years
+
+**V0.4 hypothesis:** Anti-somidics will have higher invalidation rates than positive somidics (easier to get tattoo than to lose birthmark), supporting modular update approach.
+
+### 19. Verifier Discretion Study (NEW v0.4)
+
+**Question:** When and how do verifiers choose to check anti-somidics?
+
+**Study design:**
+- Field deployment with optional anti-somidic credentials
+- Track when verifiers check vs. skip anti-somidics
+- Correlate with transaction value, time pressure, fraud history
+- Interview verifiers about decision factors
+
+**Questions:**
+- What percentage of verifications include anti-somidic checking?
+- How does transaction value affect checking rate?
+- Does fraud history influence checking behavior?
+- Are there systematic biases in checking decisions?
+- Does checking rate correlate with fraud reduction?
+
+**Metrics:**
+- Anti-somidic checking rate by context
+- Time cost of anti-somidic verification
+- Fraud rate with vs. without anti-checking
+- Verifier satisfaction with discretion
+
+**Expected outcome:**
+- Guidelines for when to check anti-somidics
+- Training materials for verifier discretion
+- Evidence for/against formalized strictness levels
+
+**Timeline:** 6-month field study after v1.0 deployment
+
+### 20. Anti-Somidic Security Analysis (NEW v0.4)
+
+**Question:** How effective are anti-somidics against different attack types?
+
+**Study design:**
+- Red team attacks on anti-somidic credentials
+- Attempt to fake absence of marks
+- Attempt tattoo removal/cover-up
+- Measure success rates
+
+**Attack scenarios:**
+- Attacker with tattoos tries to use "no tattoos" credential
+- Attacker attempts temporary cover-up
+- Attacker attempts to find confederate without tattoos
+- Sophisticated attacker laser removal attempt
+
+**Metrics:**
+- Attack success rate by method
+- Time/cost to execute successful attack
+- Verifier detection rate
+- Comparison to positive-only credentials
+
+**Expected outcome:**
+- Real-world security validation of anti-somidics
+- Identification of vulnerabilities
+- Improved verifier training
+
+**Timeline:** Post-v1.0 deployment, requires deployed system to test against
 
 ## Practical Next Steps
 
 ### Phase 1: Specification Finalization (Months 1-3)
 
 **Month 1:**
-- ✅ Complete core specification document (DONE)
-- ✅ Finalize terminology (DONE)
-- ✅ Define test vectors
-- ✅ Specify exact CRC-8 parameters
-- Create reference implementation (Python)
+- ✅ Complete core specification document v0.4 (DONE)
+- ✅ Finalize terminology including anti-somidics (DONE)
+- ✅ Anti-somidic encoding fully specified (DONE)
+- ⏳ Define test vectors (positive + anti)
+- ⏳ Specify exact CRC-5 parameters
+- ⏳ Create reference implementation (Python) including anti-somidics
 
 **Month 2:**
-- Write academic paper (draft)
-- Create visual aids and diagrams
-- Develop enrollment UX mockups
-- Build simple demonstration app
+- Write academic paper (draft) including v0.4 features
+- Create visual aids and diagrams (including anti-somidic notation)
+- Develop enrollment UX mockups (with anti-somidic flow)
+- Build simple demonstration app (showing verifier discretion)
 
 **Month 3:**
 - Submit paper to academic conference
-- Release specification v0.1 (public review)
+- Release specification v0.4 (public review)
 - Open-source reference implementation
-- Create documentation website
+- Create documentation website (with anti-somidic examples)
 
 ### Phase 2: Validation and Testing (Months 4-6)
 
 **Month 4:**
-- Conduct inter-rater reliability pilot study (N=50)
+- Conduct inter-rater reliability pilot study (N=50) including anti-somidics
 - Test reference implementation across platforms
-- Gather feedback from identity experts
+- Gather feedback from identity experts on v0.4 features
 - Refine based on feedback
 
 **Month 5:**
-- Implement verification demo system
+- Implement verification demo system with verifier discretion
 - Test with diverse volunteers
 - Document edge cases and solutions
-- Create verifier training materials
+- Create verifier training materials (including anti-somidic guidance)
 
 **Month 6:**
-- Analyze pilot study results
+- Analyze pilot study results (positive and anti verification)
 - Update specification if needed
-- Prepare case studies
+- Prepare case studies (especially credit card use case)
 - Plan larger field trials
 
 ### Phase 3: Field Trials (Months 7-12)
@@ -693,133 +899,182 @@ Somidic: [to be computed as 6-digit decimal]
 **Month 7-9:**
 - Partner with humanitarian organization (refugee camp trial)
 - Partner with rural health clinic (patient ID trial)
+- **NEW:** Partner with financial institution (credit card pilot with anti-somidics)
 - Document implementations
-- Collect usage data
+- Collect usage data (including verifier discretion behavior)
 
 **Month 10-12:**
 - Analyze field trial results
+- Measure anti-somidic discrimination improvement
+- Assess verifier discretion patterns
 - Update specification to v1.0
 - Publish findings
 - Engage standards bodies
 
 ### Phase 4: Standardization (Year 2+)
 
-- W3C VC integration proposal
+- W3C VC integration proposal (with anti-somidic support)
 - ISO standardization process
-- Industry adoption outreach
+- Industry adoption outreach (focus on credit card industry for anti-somidics)
 - Developer ecosystem building
 
 ## Critical Path Items
 
 ### Must-Have for v1.0
-1. ✅ Core encoding specification (DONE)
-2. ✅ 32 public zones defined (DONE)
-3. ✅ CRC-8 parameters specified (NEEDS EXACT PARAMS)
-4. ✅ Terminology finalized (DONE)
-5. Reference implementation (IN PROGRESS)
-6. Test vectors (NEEDED)
-7. Academic paper (IN PROGRESS)
+1. ✅ Core encoding specification (DONE - v0.4)
+2. ✅ 48 public zones defined (DONE - v0.4)
+3. ✅ Anti-somidic encoding specified (DONE - v0.4)
+4. ⏳ CRC-5 parameters specified (NEEDS EXACT PARAMS)
+5. ✅ Terminology finalized (DONE - v0.4)
+6. ⏳ Reference implementation (IN PROGRESS - needs anti-somidics)
+7. ⏳ Test vectors (NEEDED - positive + anti)
+8. ⏳ Academic paper (IN PROGRESS - needs v0.4 update)
 
 ### Should-Have for v1.0
-8. Verification UX guidelines
-9. Verifier training materials
-10. Error handling specification
-11. Multiple somidics handling
-12. Credential storage format recommendations
+9. Verification UX guidelines (including verifier discretion)
+10. Verifier training materials (anti-somidic emphasis)
+11. Error handling specification (anti-somidic scenarios)
+12. Multiple somidics handling (positive + anti combinations)
+13. Credential storage format recommendations (structured format for v0.4)
+14. Anti-somidic maximal compaction algorithm specification
 
 ### Nice-to-Have for v1.0
-13. Zone-specific encoding extensions
-14. Machine-assisted verification (optional)
-15. Privacy-enhancing protocols
-16. Integration examples (mDL, VC)
+15. Zone-specific encoding extensions (lower priority with anti-somidics)
+16. Machine-assisted verification (optional) - including anti-somidic scanning
+17. Privacy-enhancing protocols (progressive disclosure of anti-somidics)
+18. Integration examples (mDL, VC) with anti-somidics
+19. Modular update protocol specification (positive vs. anti)
 
 ### Future Versions
-17. Private somidics specification (v1.5)
-18. Animal somidics specification (v2.0)
-19. Advanced features (negative somidions, etc.)
-20. International standardization
+20. Private somidics specification (v1.5)
+21. Animal somidics specification (v2.0)
+22. Advanced features (zone-specific encoding, etc.)
+23. International standardization
+24. Anti-somidic extensions (more zones, finer granularity)
 
 ## Decision Log
 
 ### Decisions Made
 - ✅ Use "somidics" terminology (paralleling biometrics)
-- ✅ 10-bit somid encoding
-- ✅ CRC-8 for validation
+- ✅ 13-bit somid encoding (v0.2, maintained in v0.4)
+- ✅ CRC-5 for validation (v0.2, maintained in v0.4)
 - ✅ Plane architecture (262k per plane)
-- ✅ @ notation for multiple somidics
+- ✅ @ notation for multiple positives
 - ✅ Canonical ordering (numerically ascending)
 - ✅ Equipment-free human verification (no ML required)
 - ✅ Fuzzy matching as feature (not bug)
 - ✅ Exclude color encoding (stability reasons)
-- ✅ Public zones only for v0.1 (private reserved for later)
+- ✅ 48 public zones (v0.2, maintained in v0.4)
+- ✅ Context-dependent bit 12 encoding (v0.3, maintained in v0.4)
+- ✅ **Anti-somidics implemented** (v0.4)
+- ✅ **8-bit flag encoding for anti-somidics** (v0.4)
+- ✅ **Maximal compaction principle** (v0.4)
+- ✅ **Verifier discretion principle** (v0.4)
+- ✅ **Hyphen notation for anti-somidics** (v0.4)
+- ✅ **4 broad anti-zones excluding arms** (v0.4)
+- ✅ **Override principle (positives are exceptions)** (v0.4)
 
 ### Decisions Deferred
-- ⏸️ Zone-specific follow-up bits (evaluate in v0.2)
+- ⏸️ Zone-specific follow-up bits (evaluate in future version)
 - ⏸️ Private somidics map (needs medical examiner input)
 - ⏸️ Animal somidics design (separate working group)
-- ⏸️ Negative somidions (v2.0 or later)
 - ⏸️ Machine-assisted verification (optional extension)
 - ⏸️ Credential storage encryption (start with plaintext)
+- ⏸️ Formalized strictness levels (v0.4 verifier discretion may be sufficient)
+
+### Decisions Resolved (Previously Open, Now Closed)
+
+**4. Negative Somidics (RESOLVED in v0.4):**
+- ✅ Implemented as anti-somidics
+- ✅ Flag encoding (not enumeration)
+- ✅ Maximal compaction
+- ✅ Verifier discretion
+- ✅ Override principle
+- **Timeline:** Completed in v0.4 (January 2026)
 
 ### Open for Discussion
-- ❓ Verification strictness levels (needs empirical data)
-- ❓ Maximum useful somidic count in set (recommend 1-3)
+- ❓ Verification strictness levels (needs empirical data, v0.4 may have addressed with discretion)
+- ❓ Maximum useful somidic count in set (recommend 1-2 positives + 0-2 antis)
 - ❓ Standards body engagement strategy
 - ❓ Patent vs. prior art approach
+- ❓ Modular update protocol (anti-somidics separate from positives)
+- ❓ Anti-somidic extensions (more zones? finer granularity?)
 
 ## Contact and Collaboration
 
 ### How to Contribute
 
 **For researchers:**
-- Propose empirical studies
+- Propose empirical studies (especially anti-somidic focused)
 - Share findings from related work
 - Suggest improvements to methodology
 
 **For implementers:**
-- Test reference implementation
+- Test reference implementation (including anti-somidics)
 - Report bugs and edge cases
 - Contribute code (open source)
+- Test verifier discretion implementations
 
 **For standards experts:**
-- Review specification
-- Suggest integration points
+- Review specification (especially v0.4 additions)
+- Suggest integration points (W3C VC, ISO)
 - Advise on standardization process
 
 **For identity/humanitarian practitioners:**
 - Propose use cases
 - Field test in real contexts
 - Provide feedback on practical challenges
+- Test anti-somidic verification workflows
+
+**For financial/fraud prevention experts (NEW v0.4):**
+- Evaluate anti-somidics for fraud prevention
+- Propose credit card/payment use cases
+- Test verifier discretion in retail contexts
+- Measure discrimination improvement
 
 ### Mailing List / Forum
 (To be established)
 
 ### GitHub Repository
-(To be created for reference implementation)
+(To be created for reference implementation with anti-somidic support)
 
 ### Academic Contacts
-(To be added after paper submission)
+(To be added after paper submission with v0.4 features)
 
 ## Conclusion
 
-Somidics v0.1 represents a solid foundation for equipment-free, human-verifiable identification. Many design questions have been resolved, but important work remains:
+Somidics v0.4 represents a mature and feature-complete design for equipment-free, human-verifiable identification. The addition of anti-somidics resolves a major open question and significantly expands the system's capabilities without compromising its core principles.
 
 **Immediate priorities:**
-1. Finalize CRC-8 parameters and test vectors
-2. Complete reference implementation
-3. Submit academic paper
-4. Conduct pilot studies
+1. Finalize CRC-5 parameters and test vectors (including anti-somidics)
+2. Complete reference implementation with full v0.4 support
+3. Submit academic paper with v0.4 features
+4. Conduct pilot studies including anti-somidic effectiveness
 
 **Medium-term goals:**
-5. Field trials in humanitarian contexts
-6. Engage standards bodies (W3C, ISO)
-7. Build developer ecosystem
-8. Refine based on empirical evidence
+5. Field trials in humanitarian contexts AND financial/fraud prevention
+6. Engage standards bodies (W3C, ISO) with v0.4 spec
+7. Build developer ecosystem with anti-somidic support
+8. Refine based on empirical evidence (especially verifier discretion)
 
 **Long-term vision:**
 9. International standard for equipment-free biometrics
 10. Wide adoption in low-resource contexts
-11. Integration with digital credential standards
-12. Extensions for specialized use cases (medical, animal, etc.)
+11. Significant adoption in fraud prevention (credit cards)
+12. Integration with digital credential standards (mDL, VC)
+13. Extensions for specialized use cases (medical, animal, professional)
 
-The path from concept to deployed standard is long, but the need is clear and the approach is sound. With thoughtful implementation, rigorous evaluation, and community collaboration, somidics can fill an important gap in the identification technology landscape.
+**V0.4 Impact Summary:**
+
+The resolution of the "negative somidics" question through anti-somidics represents a major milestone. Anti-somidics provide:
+
+1. **Dramatic discrimination improvement** (3-10×) without requiring additional body exposure
+2. **Asymmetric defense** against sophisticated attacks (can't fake absence)
+3. **Verifier discretion** enabling context-appropriate security
+4. **New use cases** (professional credentials with pure anti-somidics)
+5. **Cultural acceptability** (hands+fingers+wrists verifiable with long sleeves)
+6. **Modular updates** (can update anti portion independently)
+
+The path from concept to deployed standard is long, but v0.4 represents a complete, well-designed system ready for standardization. The need is clear, the approach is sound, and anti-somidics provide a powerful enhancement that maintains the core philosophy of equipment-free, human-verifiable identification with appropriate privacy protections.
+
+With thoughtful implementation, rigorous evaluation, and community collaboration, somidics v0.4 can fill an important gap in the identification technology landscape, particularly in fraud prevention and contexts where equipment-free verification is critical.
