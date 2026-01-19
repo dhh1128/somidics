@@ -1,4 +1,4 @@
-# Somidics Design Rationale v0.3
+# Somidics Design Rationale v0.4
 
 ## Core Design Philosophy
 
@@ -56,9 +56,9 @@ Traditional biometrics require:
 ### Inter-Rater Reliability
 
 **We accept that two humans might disagree:**
-- Is a mark "grain-sized" or "fingernail-sized"? → Fuzzy boundary
-- Is it "raised" or "flush"? → Sometimes subtle
-- Is it on "left cheek" or "nose"? → If near boundary
+- Is a mark "grain-sized" or "fingernail-sized"? â†’ Fuzzy boundary
+- Is it "raised" or "flush"? â†’ Sometimes subtle
+- Is it on "left cheek" or "nose"? â†’ If near boundary
 
 **This is a feature, not a bug:**
 - Prevents somidics from being used as strong legal proof
@@ -87,7 +87,7 @@ Traditional biometrics require:
 - Adds precision without complexity (natural language: "tip of finger" vs "base of finger")
 - Each portion distinct: Ring portion = knuckle area, Upper portion = toward fingertip
 - Missing finger convention: If whole finger missing, use ring portion zone
-- Entropy gain: log₂(20) vs log₂(10) = 4.32 vs 3.32 bits (+1 bit)
+- Entropy gain: logâ‚‚(20) vs logâ‚‚(10) = 4.32 vs 3.32 bits (+1 bit)
 
 **Natural language examples:**
 - "Scar on ring portion of left index finger"
@@ -98,7 +98,7 @@ Traditional biometrics require:
 **Why subdivide into thumb-side/pinky-side:**
 - Hands are large zones with many marks
 - Natural reference points (thumb side vs pinky side immediately clear)
-- Entropy gain: log₂(8) vs log₂(4) = 3 vs 2 bits (+1 bit)
+- Entropy gain: logâ‚‚(8) vs logâ‚‚(4) = 3 vs 2 bits (+1 bit)
 
 **Natural language examples:**
 - "Birthmark on thumb side of left palm"
@@ -118,29 +118,29 @@ Traditional biometrics require:
 ### What We Excluded and Why
 
 **Upper legs/thighs:**
-- ✗ Modesty concerns (requires removing pants)
-- ✗ Practical concerns (less accessible)
-- ✗ Cultural unacceptability in many contexts
+- âœ— Modesty concerns (requires removing pants)
+- âœ— Practical concerns (less accessible)
+- âœ— Cultural unacceptability in many contexts
 
 **Feet/toes:**
-- ✗ Requires shoe removal (impractical)
-- ✗ Hygiene concerns
-- ✗ Less common to have distinctive marks
+- âœ— Requires shoe removal (impractical)
+- âœ— Hygiene concerns
+- âœ— Less common to have distinctive marks
 
 **Torso (chest, back, abdomen):**
-- ✗ Requires clothing removal
-- ✗ Strong modesty concerns
-- ✓ Moved to reserved zones (48-63) for forensic use only
+- âœ— Requires clothing removal
+- âœ— Strong modesty concerns
+- âœ“ Moved to reserved zones (48-63) for forensic use only
 
 **Scalp/hair:**
-- ✗ Hair coverage varies
-- ✗ Marks not consistently visible
-- ✗ Cultural variations in hair covering
+- âœ— Hair coverage varies
+- âœ— Marks not consistently visible
+- âœ— Cultural variations in hair covering
 
 **Teeth:**
-- ✗ Too unstable (dental work changes)
-- ✗ Requires opening mouth (intimate)
-- ✗ Not reliably visible
+- âœ— Too unstable (dental work changes)
+- âœ— Requires opening mouth (intimate)
+- âœ— Not reliably visible
 
 ### Reserved Zones (48-63)
 
@@ -182,16 +182,16 @@ Traditional biometrics require:
 - Tattoos increasingly common worldwide
 - Piercings universal across cultures
 - Implants/body modification growing
-- Intentional → person chose to be identifiable
+- Intentional â†’ person chose to be identifiable
 
 ### Size: Why Four Categories?
 
 **Design pressure:** Need human-comparable references
 
 **Rejected approaches:**
-- ✗ Millimeter measurements - Requires ruler, too precise
-- ✗ "Small/medium/large" - Too vague, only 3 categories
-- ✗ Comparison to body parts (thumb joint) - Requires looking at person's thumb
+- âœ— Millimeter measurements - Requires ruler, too precise
+- âœ— "Small/medium/large" - Too vague, only 3 categories
+- âœ— Comparison to body parts (thumb joint) - Requires looking at person's thumb
 
 **Chosen approach:** Universal reference objects
 - Grain (rice/wheat) - Available globally
@@ -233,7 +233,7 @@ This worked well for natural marks and scars, but left opportunities on the tabl
 **Rationale:**
 - Missing/anomalous features don't have "texture" in the normal sense
 - These bits were essentially wasted (always set to 00 by convention in v0.2)
-- Repurposing gives 4× discrimination for these rare but important cases
+- Repurposing gives 4Ã— discrimination for these rare but important cases
 - Natural language remains clear: "Extra tissue on left hand" vs "Missing on right finger"
 - Stability: These subtypes don't change over time
 
@@ -279,7 +279,7 @@ This worked well for natural marks and scars, but left opportunities on the tabl
 - Common use case: "Three piercings in left ear"
 - Makes semantic sense (people cluster piercings)
 
-#### For Anomalous Features (Type=10, Texture≠00):
+#### For Anomalous Features (Type=10, Textureâ‰ 00):
 **Intensifier encoding (v0.3 innovation):**
 - 0 = Mild/subtle
 - 1 = Severe/prominent
@@ -308,30 +308,30 @@ This worked well for natural marks and scars, but left opportunities on the tabl
 **Color/Contrast - Explicitly excluded**
 
 **Why not include?**
-- ✗ Fades over time (scars, tattoos)
-- ✗ Changes with sun exposure
-- ✗ Subjective to skin tone
-- ✗ Lighting-dependent
-- ✗ Reduces stability
+- âœ— Fades over time (scars, tattoos)
+- âœ— Changes with sun exposure
+- âœ— Subjective to skin tone
+- âœ— Lighting-dependent
+- âœ— Reduces stability
 
 **This was a hard decision** - color is very identifying! But:
 - Stability is more important than discrimination
 - A somidic should be valid for decades
-- "Dark mole" becomes "faded mole" → breaks the encoding
+- "Dark mole" becomes "faded mole" â†’ breaks the encoding
 
 **Origin (birth/accident/intentional) - Excluded**
 
 **Why not?**
-- ✗ Not observable at verification time
-- ✗ Doesn't help verifier make determination
-- ✗ Adds complexity without utility
+- âœ— Not observable at verification time
+- âœ— Doesn't help verifier make determination
+- âœ— Adds complexity without utility
 
 **Age of mark - Excluded**
 
 **Why not?**
-- ✗ Not determinable by looking
-- ✗ Not helpful for matching
-- ✗ Would be guesswork
+- âœ— Not determinable by looking
+- âœ— Not helpful for matching
+- âœ— Would be guesswork
 
 ## CRC Design Evolution
 
@@ -350,10 +350,10 @@ This worked well for natural marks and scars, but left opportunities on the tabl
 
 **Why reduce from 8 to 5 bits?**
 - Error detection still strong enough (96.9% rejection rate)
-- Gained 3 bits for somid (10→13 bits)
-- 13-bit somid with dependencies ≈ 11.9 bits real entropy
-- Much better than 10-bit somid with dependencies ≈ 8-9 bits
-- Trade 2.7% error detection for ~3× discrimination improvement
+- Gained 3 bits for somid (10â†’13 bits)
+- 13-bit somid with dependencies â‰ˆ 11.9 bits real entropy
+- Much better than 10-bit somid with dependencies â‰ˆ 8-9 bits
+- Trade 2.7% error detection for ~3Ã— discrimination improvement
 
 **Is 96.9% rejection enough?**
 - Yes - still catches vast majority of typos
@@ -404,7 +404,7 @@ This worked well for natural marks and scars, but left opportunities on the tabl
 **v0.3 approach:**
 - Type=10 means "Missing or Anomalous"
 - Texture bits 00/01/10/11 mean Missing/Extra/Fused/Deformed
-- For anomalous (texture≠00), bit 12 means mild/severe
+- For anomalous (textureâ‰ 00), bit 12 means mild/severe
 - For missing (texture=00), bit 12 unused (set to 0)
 - Gain: 4 subtypes, intensity for 3 of them
 
@@ -465,8 +465,8 @@ This worked well for natural marks and scars, but left opportunities on the tabl
 
 **Example:**
 - Tattoo fades from dark to light over 20 years
-- Old encoding: "dark tattoo" → breaks when it fades
-- Our encoding: "tattoo with writing on left forearm, coin-sized" → still valid
+- Old encoding: "dark tattoo" â†’ breaks when it fades
+- Our encoding: "tattoo with writing on left forearm, coin-sized" â†’ still valid
 
 ### When Re-issuance IS Required
 
@@ -500,7 +500,7 @@ v0.2 introduced 13-bit somid but:
 1. **Tattoo writing bit:** Since Type=11+Texture=10 identifies tattoos, repurpose bit 12
    - Gain: ~0.12 bits average
 
-2. **Anomalous intensifier:** Since Type=10+Texture≠00 identifies anomalies, repurpose bit 12
+2. **Anomalous intensifier:** Since Type=10+Textureâ‰ 00 identifies anomalies, repurpose bit 12
    - Gain: ~0.06 bits average
 
 3. **Missing texture repurposing:** Since Type=10 texture was wasted, create subtypes
@@ -512,25 +512,470 @@ v0.2 introduced 13-bit somid but:
 
 ### What We Optimized For
 
-1. ✅ **Equipment-free** - Zero cost, works anywhere
-2. ✅ **Human-verifiable** - No training needed
-3. ✅ **Memorable** - Remember the mark, not the number
-4. ✅ **Stackable** - Multiple somidics for higher security
-5. ✅ **Stable** - Decades of validity
-6. ✅ **Privacy-preserving** - Fuzzy enough to avoid overreach
-7. ✅ **Culturally adaptable** - Respects modesty norms
-8. ✅ **Practical** - Works in real-world scenarios
+1. âœ… **Equipment-free** - Zero cost, works anywhere
+2. âœ… **Human-verifiable** - No training needed
+3. âœ… **Memorable** - Remember the mark, not the number
+4. âœ… **Stackable** - Multiple somidics for higher security
+5. âœ… **Stable** - Decades of validity
+6. âœ… **Privacy-preserving** - Fuzzy enough to avoid overreach
+7. âœ… **Culturally adaptable** - Respects modesty norms
+8. âœ… **Practical** - Works in real-world scenarios
 
 ### What We Explicitly Did NOT Optimize For
 
-1. ✗ **Courtroom-proof identification** - Too strong for our use case
-2. ✗ **High-throughput** - Human verification is inherently slow
-3. ✗ **Video-call verification** - Requires good cameras, lighting
-4. ✗ **Perfect precision** - Would sacrifice stability
-5. ✗ **Uniqueness guarantee** - 1-in-3,300 is good enough
-6. ✗ **Universal coverage** - Some people may lack suitable marks
+1. âœ— **Courtroom-proof identification** - Too strong for our use case
+2. âœ— **High-throughput** - Human verification is inherently slow
+3. âœ— **Video-call verification** - Requires good cameras, lighting
+4. âœ— **Perfect precision** - Would sacrifice stability
+5. âœ— **Uniqueness guarantee** - 1-in-3,300 is good enough
+6. âœ— **Universal coverage** - Some people may lack suitable marks
 
 ## Version Evolution Summary
+
+### v0.1 â†’ v0.2: Discrimination Enhancement
+- 10-bit â†’ 13-bit somid
+- 32 â†’ 48 zones (finger/hand/face subdivision)
+- CRC-8 â†’ CRC-5 (trade error detection for discrimination)
+- Added multiplicity attribute
+- Result: ~7.7Ã— better discrimination
+
+### v0.2 â†’ v0.3: Semantic Enhancement
+- Same bit structure (13-bit somid, 5-bit CRC)
+- Context-dependent bit 12 (tattoo writing, anomalous intensity)
+- Missing/Anomalous texture repurposing (4 subtypes)
+- Refined entropy analysis (more accurate correlation modeling)
+- Result: Better real-world discrimination through smarter encoding
+
+### Design Philosophy Evolution
+
+**v0.1:** Prove the concept
+**v0.2:** Maximize theoretical entropy
+**v0.3:** Optimize practical entropy given real-world constraints
+**v0.4:** Add optional negative assertions for discrimination enhancement
+
+The progression shows increasing sophistication while maintaining core simplicity and stability principles.
+
+## Anti-Somidics Design Rationale (v0.4 Addition)
+
+### The Core Insight
+
+**Positive somidics alone have limited discrimination** (~1-in-3,300 for a single somidic).
+
+**Adding negative assertions dramatically improves discrimination:**
+- "I have a mole on my wrist" = 1-in-3,300
+- "I have a mole on my wrist AND no tattoos anywhere" = 1-in-15,000+
+
+The key innovation: **Use absence of marks as identifying information**.
+
+### Why Anti-Somidics?
+
+#### Problem: Positive Somidics Can Be Easy to Match
+
+**Scenario:** Credit card protected by somidic "tattoo on right forearm"
+
+**Issue:** In a tattooed population, 30-40% of people might have a tattoo on their forearm.
+
+**Discrimination is weak:** The thief has a decent chance of finding someone who matches.
+
+#### Solution: Add Negative Constraint
+
+**Enhanced credential:** "Tattoo on right forearm + NO other tattoos on hands or face"
+
+**Now the thief needs:**
+1. Someone with tattoo on forearm (30-40% of population)
+2. Who has NO tattoos on hands (70% of tattooed people)
+3. Who has NO tattoos on face (90% of tattooed people)
+
+**Combined probability:** 30% × 70% × 90% ≈ 19% → **Much harder!**
+
+### Why Flag Encoding Instead of Enumeration?
+
+#### Rejected Approach: Enumeration
+
+**Could have used 2 bits for zones (4 values), 2 bits for types (4 values):**
+```
+Zone enumeration: 00=hands, 01=face, 02=ears, 03=neck
+Type enumeration: 00=natural, 01=scars, 10=tattoos, 11=piercings
+```
+
+**Problem:** Can't say "no tattoos on hands OR face" - would need TWO anti-somidics.
+
+**Result:** 8 hex digits instead of 2 to express simple concepts.
+
+#### Chosen Approach: Flags (Bitmasks)
+
+**Use 4 zone flags + 4 type flags:**
+```
+Zones: bit0=hands, bit1=face, bit2=ears, bit3=neck
+Types: bit4=natural, bit5=scars, bit6=tattoos, bit7=piercings
+```
+
+**Benefit:** Can combine zones and types in ONE anti-somidic:
+```
+0x43 = No tattoos on (hands | face)
+0xC1 = No (tattoos | piercings) on hands
+0xFF = No marks of any kind anywhere
+```
+
+**This is much more compact and expressive.**
+
+### Why Only 4 Anti-Zones (Not 48)?
+
+#### Could Have Used All 48 Positive Zones
+
+**Rejected approach:** Anti-somidics use same 48 zones as positive somidics
+
+**Problems:**
+1. **Verification tedious:** "Check each of 48 zones for absence" - impractical
+2. **Overkill precision:** Don't need to distinguish "no tattoos on left index ring portion vs upper portion"
+3. **Bit cost:** Would need 6 bits for zones, leaving only 2 for types
+
+#### Chosen Approach: 4 Broad Zones
+
+**Rationale:**
+1. **Natural groupings:** People think in broad terms ("hands" not "left index upper portion")
+2. **Efficient verification:** Scan entire hand in one pass
+3. **Compact encoding:** 4 bits for zones, 4 bits for types
+4. **Asymmetric by design:** Zone 0 verifiable even with long sleeves
+
+**The 4 zones are strategically chosen:**
+
+**Zone 0: Hands + Fingers + Wrists (30 positive zones)**
+- **Killer feature:** Verifiable without disrobing (visible with long sleeves)
+- **Cultural acceptability:** Universal
+- **High coverage:** Most compressed anti-zone
+
+**Zone 1: Face (10 positive zones)**
+- Always visible
+- Highly discriminating (tattoos on face are uncommon in many populations)
+
+**Zone 2: Ears (2 positive zones)**
+- Piercings common here
+- Usually visible
+
+**Zone 3: Neck (2 positive zones)**
+- Usually visible
+- Tattoos here are distinctive
+
+**Arms (zones 28-31) intentionally excluded:**
+- Require more exposure (remove/roll up long sleeves)
+- Modesty concerns
+- Better to leave out for practical reasons
+
+### Why Maximal Compaction?
+
+#### Could Allow Redundant Anti-Somidics
+
+**User might enter:**
+```
+-41 (no tattoos on hands)
+-42 (no tattoos on face)
+```
+
+**System could keep both:** `-4142`
+
+#### Chosen: Always Compact
+
+**System automatically compacts to:** `-43`
+
+**Rationale:**
+1. **Shorter notation:** 2 hex digits instead of 4
+2. **Faster verification:** One scan instead of two
+3. **Clearer semantics:** "No tattoos on hands or face" vs. "No tattoos on hands AND no tattoos on face"
+4. **Less storage:** Important for credentials
+5. **Canonical form:** Prevents duplicate representations
+
+**Maximum anti-somidics: 4**
+
+Only achievable with 4 different zone patterns across the 4 type dimensions - practically absurd.
+
+**In reality:**
+- Most credentials: 0-1 anti-somidics
+- Typical: Just one (like `4f` or `cf`)
+
+### Why Verifier Discretion?
+
+#### Critical Design Principle
+
+**Anti-somidics are ALWAYS optional from verifier's perspective.**
+
+#### Could Have Made Them Mandatory
+
+**Rejected approach:** If credential contains anti-somidics, verifier MUST check them
+
+**Problems:**
+1. Forces slow verification even in low-value contexts
+2. Makes anti-somidics a burden instead of a benefit
+3. Reduces flexibility
+
+#### Chosen: Verifier Decides
+
+**Verifier checks anti-somidics only when discrimination value justifies the time cost.**
+
+**Benefits:**
+1. **Graceful degradation:** Ignore antis = works like v0.3
+2. **Context-appropriate:** High-value = check antis, low-value = skip them
+3. **No downside:** Credential holder pays no extra cost
+4. **Market-driven:** Verifiers naturally optimize for their use case
+
+**Example scenarios:**
+
+**Grocery store (low-value):**
+- Checks: Just first positive somidic
+- Ignores: All anti-somidics
+- Time: 30 seconds
+- Acceptable fraud risk
+
+**Jewelry store (high-value):**
+- Checks: All positives + first anti-somidic
+- Time: 90 seconds
+- Much lower fraud risk
+
+**Border control (very high-value):**
+- Checks: All positives + all anti-somidics
+- Time: 2-3 minutes
+- Minimal fraud risk
+
+### Why Hyphen Notation?
+
+#### Semantic Meaning
+
+**The hyphen represents "subtraction" or "exclusion":**
+```
+147293-41
+  │     │
+  │     └─ MINUS this characteristic (no tattoos)
+  └─────── PLUS this characteristic (mole)
+```
+
+**Reads naturally:** "I have X minus Y"
+
+#### Could Have Used Different Notation
+
+**Rejected alternatives:**
+```
+147293+41    Confusing (+ implies adding)
+147293/41    Looks like division
+147293,41    Looks like list continuation
+147293|41    Hard to type, unclear meaning
+```
+
+**Hyphen is best:**
+- Visual clarity (clearly separates positives from antis)
+- Semantic fit (subtraction/exclusion)
+- Easy to type
+- Won't confuse with positive somidics (no valid positive somidic contains hyphen)
+
+### Why 8 Bits (Not 4, Not 16)?
+
+#### 4 Bits Would Be Too Limiting
+
+**With 4 bits total:**
+- Could have 2 zone bits (enumeration) + 2 type bits (enumeration)
+- **Problem:** Can't combine zones or types
+- Would need multiple anti-somidics for simple expressions
+
+**Example:**
+```
+"No tattoos on hands or face"
+Would require: -xy-zw (two anti-somidics)
+Instead of: -43 (one anti-somidic)
+```
+
+#### 16+ Bits Would Be Overkill
+
+**With 16 bits:**
+- Could encode more zones, more types, more detail
+- **Problem:** Don't need that much information
+- Anti-somidics should be simple and broad
+- Compact notation is valuable
+
+**Example:**
+```
+16-bit anti-somidic: -abcd (4 hex digits)
+8-bit anti-somidic: -ab (2 hex digits)
+```
+
+The extra precision doesn't help, and the notation becomes unwieldy.
+
+#### 8 Bits Is Optimal
+
+**Perfect balance:**
+- 4 zone flags = up to 4 broad zones
+- 4 type flags = up to 4 mark types
+- Can combine both dimensions
+- Fits in 2 hex digits (human-readable)
+- Maximum compaction to 1-4 anti-somidics
+
+### Why Not Include Arms in Anti-Zones?
+
+#### Could Have Made Arms a 5th Anti-Zone
+
+**Would give 5 zones, requiring 5 bits (3-bit encoding with one wasted value).**
+
+#### Excluded for Practical Reasons
+
+**Arms (zones 28-31) are special:**
+1. **Require more exposure:** Need to remove or roll up long sleeves
+2. **Modesty concerns:** More revealing than hands/face
+3. **Seasonal variation:** Covered in winter, exposed in summer
+4. **Cultural variation:** Some cultures always cover arms
+
+**Including arms would:**
+- Reduce verifiability (can't always check)
+- Increase intrusiveness (more disrobing needed)
+- Create cultural issues (some populations can't participate)
+
+**Better to exclude arms:**
+- Zone 0 (hands+wrists) can be checked even with long sleeves
+- Other zones (face, ears, neck) are universally visible
+- Anti-somidics remain practical and culturally acceptable
+
+**If need to exclude arms:**
+- Can use positive zones (define forearm zones explicitly)
+- Or accept that arms are not covered by anti-somidics
+- Trade-off is acceptable for the benefits
+
+### Why Override Principle?
+
+#### Positive Somidics Are Exceptions to Anti-Somidics
+
+**Example:**
+```
+147293-41
+  Positive: "Tattoo on left wrist" (zone 32, in anti-zone 0)
+  Anti: "No tattoos on hands+fingers+wrists"
+```
+
+**Without override principle:**
+- This would be contradictory
+- "I have a tattoo" vs "I have no tattoos"
+
+**With override principle:**
+- Positive creates exception to anti
+- Meaning: "I have THIS tattoo, but no OTHER tattoos in that zone"
+
+**This is natural and useful:**
+- Allows precise specification ("only one tattoo")
+- Verification clear: check for specific tattoo, then scan for others
+- Semantics make sense
+
+### Discrimination Analysis
+
+#### Single Positive Somidic
+- Entropy: ~11.7 bits
+- Discrimination: ~1-in-3,300
+
+#### Single Anti-Somidic Added
+- Anti entropy: ~2-3 bits (depends on population)
+- Combined: ~14-15 bits
+- Discrimination: ~1-in-15,000 to ~1-in-30,000
+- **Improvement: 5-10×**
+
+#### Multiple Anti-Somidics
+```
+147293-cf (no tattoos or piercings anywhere)
+  Positive: ~11.7 bits
+  Anti: ~3-4 bits (more restrictive)
+  Combined: ~15-16 bits
+  Discrimination: ~1-in-30,000 to ~1-in-60,000
+```
+
+#### Multiple Positives + Antis
+```
+@147293:582047-cf
+  Two positives: ~23 bits
+  One anti: ~3 bits
+  Combined: ~26 bits
+  Discrimination: ~1-in-60-million
+  **High-security credential**
+```
+
+### Use Case Fit
+
+#### Excellent Fit: Credit Cards
+
+**Problem:** Card theft common, PIN can be observed
+**Solution:** Card + somidic protection
+
+**Without anti:**
+```
+147293 (mole on wrist)
+Discrimination: ~1-in-3,300
+Thief's chance: Not terrible
+```
+
+**With anti:**
+```
+147293-41 (mole on wrist, no tattoos on hands)
+Discrimination: ~1-in-15,000
+Thief's chance: Much lower
+Verification time: +30 seconds (acceptable)
+```
+
+#### Excellent Fit: Government ID
+
+**High-value credential, time acceptable:**
+```
+@147293:582047-cf
+  Two natural marks
+  No tattoos or piercings anywhere
+  
+Discrimination: ~1-in-50-million
+Verification: ~2 minutes (acceptable for border control)
+```
+
+#### New Capability: Professional Credentials
+
+**Pure anti-somidic credentials:**
+```
+-cf
+  No positives needed
+  Just asserts: "No tattoos or piercings anywhere"
+  
+Use case: Lawyer bar card, surgeon registry, diplomatic credentials
+Discrimination: ~1-in-20 (professional populations)
+```
+
+This was impossible in v0.3 - anti-somidics enable it.
+
+### What We Deliberately Don't Encode in Anti-Somidics
+
+#### Size/Texture Information
+
+**Could have encoded:** "No large tattoos" or "No raised marks"
+
+**Rejected:**
+- Adds complexity (more bits needed)
+- Harder to verify (subjective judgments)
+- Doesn't add much discrimination
+- Keep anti-somidics simple and broad
+
+**Chosen:** Anti-somidics only filter by zone and type (broad categories).
+
+#### Specific Positive Zones
+
+**Could have used:** All 48 positive zones in anti-somidics
+
+**Rejected:**
+- Would need 6 bits for zones
+- Verification tedious
+- Over-precision
+
+**Chosen:** 4 broad anti-zones that collapse 44 positive zones.
+
+#### Arms as Anti-Zone
+
+**Could have added:** Arms as 5th anti-zone
+
+**Rejected:**
+- Modesty concerns
+- Verification issues (clothing)
+- Would need 5 bits (waste one encoding)
+
+**Chosen:** 4 anti-zones excluding arms.
+
+## Version Evolution Summary (Updated for v0.4)
 
 ### v0.1 → v0.2: Discrimination Enhancement
 - 10-bit → 13-bit somid
@@ -543,16 +988,23 @@ v0.2 introduced 13-bit somid but:
 - Same bit structure (13-bit somid, 5-bit CRC)
 - Context-dependent bit 12 (tattoo writing, anomalous intensity)
 - Missing/Anomalous texture repurposing (4 subtypes)
-- Refined entropy analysis (more accurate correlation modeling)
+- Refined entropy analysis
 - Result: Better real-world discrimination through smarter encoding
+
+### v0.3 → v0.4: Optional Discrimination Boost
+- Added anti-somidics (8-bit flag encoding)
+- Hyphen notation for negative assertions
+- Maximal compaction principle
+- Override principle for positives
+- Verifier discretion
+- Result: 5-20× discrimination improvement when used, zero downside when ignored
 
 ### Design Philosophy Evolution
 
 **v0.1:** Prove the concept
 **v0.2:** Maximize theoretical entropy
 **v0.3:** Optimize practical entropy given real-world constraints
-
-The progression shows increasing sophistication while maintaining core simplicity and stability principles.
+**v0.4:** Add optional negative assertions for discrimination enhancement without compromising simplicity
 
 ## Open Design Questions for Future Versions
 
@@ -583,6 +1035,15 @@ The progression shows increasing sophistication while maintaining core simplicit
    - Who sets the level (issuer/holder/verifier)?
    - How to audit compliance?
 
+### Questions Resolved in v0.4
+
+6. **Anti-somidics (RESOLVED):**
+   - ✅ 8-bit flag encoding (4 zone flags + 4 type flags)
+   - ✅ Maximal compaction principle
+   - ✅ Verifier discretion (always optional)
+   - ✅ Hyphen notation for negative assertions
+   - ✅ 4 broad anti-zones (hands+wrists, face, ears, neck)
+
 ### Areas for Future Research
 
 - Empirical inter-rater reliability studies
@@ -593,10 +1054,13 @@ The progression shows increasing sophistication while maintaining core simplicit
 
 ## Conclusion
 
-Somidics v0.3 represents a mature design that balances:
+Somidics v0.4 represents a mature design that balances:
 - **Theoretical elegance** with **practical constraints**
 - **Discrimination power** with **stability over time**
 - **Precision** with **fuzzy human judgment**
 - **Innovation** with **simplicity**
+- **Optional enhancement** with **zero downside**
 
-The evolution from v0.1 through v0.3 shows progressive refinement while maintaining core principles: equipment-free, human-verifiable, stable, and privacy-preserving identification for contexts where traditional biometrics are impractical or inappropriate.
+The evolution from v0.1 through v0.4 shows progressive refinement while maintaining core principles: equipment-free, human-verifiable, stable, and privacy-preserving identification for contexts where traditional biometrics are impractical or inappropriate.
+
+Version 0.4's addition of anti-somidics demonstrates that the system can be extended with powerful new capabilities while remaining backward compatible and preserving the fundamental design philosophy of verifier discretion and graceful degradation.
