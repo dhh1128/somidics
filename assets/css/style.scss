@@ -20,7 +20,7 @@ h1 {
     font-size: 20pt;
     color: #491705;
 }
-h2 {
+h2, label {
     font-weight: 400;
     font-size: 15pt;
 }
@@ -50,4 +50,87 @@ a:hover {
     border-bottom: double #765043;
 }
 a:visited { color: #765043 }
+label, textarea, input[type="text"], select {
+    width: 100%;
+    display: block;
+}
+textarea {
+    background-color: white;
+}
+textarea:read-only, input[type="text"]:read-only {
+    background-color: #fbf6f3;
+}
+label {
+  padding-top: 1em;
+}
+button {
+    margin-top: 4px;
+    background-color: #d1c5c0;
+    color: #491705;
+    padding: 0.3em 0.6em;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 107%;
+    border-color: #8d6d62;
+}
+button:hover {
+    background-color: #baa8a1;
+}
+label.copier {
+    background-repeat: no-repeat;
+    background-position: right bottom 4px;
+    background-image: url("{{ site.baseurl }}/assets/copy-icon.png");
+}
+@keyframes copiedAnimation {
+    0% {
+        background-color: initial; /* Start with the initial color */
+    }
+    50% {
+        background-color: #e4bfa8; /* At 50%, the background becomes beige */
+    }
+    100% {
+        background-color: initial; /* Return to the original color */
+    }
+}
+.copied {
+    animation: copiedAnimation 0.5s ease-in-out;
+}
+figcaption {
+    font-size: 85%;
+    font-style: italic;
+    color: #777777;
+}
+section { width: 664px; }
+div.wrapper { width: 1024px;}
+@media print, screen and (max-width: 1124px) {
+    div.wrapper {
+        width:auto;
+        margin: 0
+    }
 
+    header,section,footer {
+        float: none;
+        position: static;
+        width: auto
+    }
+
+    section {
+        border: 1px solid #e5e5e5;
+        border-width: 1px 0;
+        padding: 20px 0;
+        margin: 0 0 20px
+    }
+
+    header a small {
+        display: inline
+    }
+
+    header ul {
+        position: absolute;
+        right: 50px;
+        top: 52px
+    }
+}
+@media print, screen and (max-width: 960px) {
+    header { padding: 0 }
+}
