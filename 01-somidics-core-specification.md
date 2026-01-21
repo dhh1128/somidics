@@ -4,7 +4,7 @@
 
 Somidics is a human-verifiable, equipment-free biometric identification system based on naturally occurring or intentional marks on the human body. Version 0.6 updates notation for improved clarity and adds formal decoding/rendering specifications.
 
-**Version:** 0.5 (January 2026)
+**Version:** 0.6 (January 2026)
 **Previous versions:** 0.4, 0.3, 0.2, 0.1 (see update documents for changes)
 
 ## Core Concepts
@@ -424,9 +424,9 @@ The 6-digit decimal space (000000-999999) is divided into planes:
 ### Plane Allocation
 
 **Plane 0: Human Somidics (000000-262143)**
-- All human somidions (public and reserved zones)
+- All human somidions (public zones only in this version)
 - Public zones: bits 0-5 = 0-47
-- Reserved zones: bits 0-5 = 48-63
+- Reserved zones: bits 0-5 = 48-63 (reserved for future versions; MUST NOT appear in a well-formed somidic in v0.6)
 
 **Plane 1: Animal Somidics (262144-524287)**
 - Reserved for future animal specification
@@ -450,7 +450,7 @@ The 6-digit decimal space (000000-999999) is divided into planes:
 @+999999
 ```
 
-**Validation:** Well-formed only (CRC check SKIPPED)
+**Validation:** CRC check SKIPPED; MUST be rejected by default (see Validation Rules), but MAY be accepted in an explicit testing mode
 **Semantics:** Matches any verification attempt  
 **Use:** System testing, capability verification
 **Decoding:** Returns special sentinel structure (all fields null/test values)
@@ -462,7 +462,7 @@ The 6-digit decimal space (000000-999999) is divided into planes:
 @+999998
 ```
 
-**Validation:** Well-formed only (CRC check SKIPPED)
+**Validation:** CRC check SKIPPED; MUST be rejected by default (see Validation Rules), but MAY be accepted in an explicit testing mode
 **Semantics:** Fails all verification attempts
 **Use:** Negative testing, fraud detection testing
 **Decoding:** Returns special sentinel structure (all fields null/test values)
@@ -646,8 +646,10 @@ A string is **well-formed** if and only if it matches ONE of these patterns:
 
 **Quants:**
 - Must be 6-digit decimal with valid CRC-5
-- Zone must be 0-47 (public zones)
+- Zone MUST be 0-47 (public zones)
+- Zone values 48-63 are RESERVED and MUST be rejected as invalid in this version
 - Leading zeros required (e.g., `000123` not `123`)
+- Plane 3 special values (e.g., `@+999999`, `@+999998`) MUST be rejected by default; a validator MAY expose an explicit option (e.g., `allow_test_plane=True`) to accept them for testing
 
 **Contraquants:**
 - Must be pairs of hex digits (even character count after `-`)
@@ -837,20 +839,30 @@ All implementations MUST produce this structure:
 
 **Texture name mapping (context-dependent, normative):**
 
-For Type=0,1,3 (Natural, Scar, Artificial excluding tattoos):
+Texture values MUST be interpreted using a type-dependent mapping consistent with the Type/Texture encoding tables above.
+
+**For Type=00 (Natural) and Type=01 (Scar):**
 ```
-0: "flush"
-1: "raised_depressed"
-2: "tattooed"
-3: "pierced"
+0b00: "flush"
+0b01: "raised"
+0b10: "depressed"
+0b11: INVALID (MUST NOT appear in a well-formed quant)
 ```
 
-For Type=2 (Missing/Anomalous):
+**For Type=10 (Missing/Anomalous):**
 ```
-0: "missing"
-1: "extra"
-2: "fused"
-3: "deformed"
+0b00: "missing"
+0b01: "extra"
+0b10: "fused"
+0b11: "deformed"
+```
+
+**For Type=11 (Artificial/Intentional):**
+```
+0b00: "tattooed"
+0b01: "implanted"
+0b10: "pierced"
+0b11: INVALID (MUST NOT appear in a well-formed quant)
 ```
 
 **Special bit interpretation (context-dependent, normative):**
@@ -885,7 +897,7 @@ Bit 3 set: "neck"
 
 **Type category strings (normative):**
 ```
-Bit 4 set: "natural_marks"
+Bit 4 set: "natural"
 Bit 5 set: "scars"
 Bit 6 set: "tattoos"
 Bit 7 set: "piercings"
@@ -910,7 +922,7 @@ def decode_contraquant(contra_hex: str) -> dict:
     if zone_flags & 0x08: zones.append('neck')
     
     types = []
-    if type_flags & 0x01: types.append('natural_marks')
+    if type_flags & 0x01: types.append('natural')
     if type_flags & 0x02: types.append('scars')
     if type_flags & 0x04: types.append('tattoos')
     if type_flags & 0x08: types.append('piercings')
@@ -940,7 +952,7 @@ def decode_contraquant(contra_hex: str) -> dict:
       "size": 2,
       "size_name": "coin",
       "texture": 1,
-      "texture_name": "raised_depressed",
+      "texture_name": "raised",
       "special": 0,
       "special_meaning": "single"
     }
@@ -1225,53 +1237,74 @@ def validate_contraquant_byte(value):
     return True
 ```
 
-### Maximal Compaction Algorithm
+### Maximal Compaction Algorithm (Normative)
 
-```python
-def maximally_compact_contraquants(antis):
-    """
-    Compact contraquants to minimum count
-    """
-    changed = True
-    contra_tuples = [(a & 0x0F, a & 0xF0) for a in antis]
-    
-    while changed:
-        changed = False
-        new_tuples = []
-        used = set()
-        
-        for i, (z1, t1) in enumerate(contra_tuples):
-            if i in used:
-                continue
-            
-            combined_z = z1
-            combined_t = t1
-            
-            for j, (z2, t2) in enumerate(contra_tuples[i+1:], i+1):
-                if j in used:
-                    continue
-                
-                # Same zones? Combine types
-                if z1 == z2:
-                    combined_t |= t2
-                    used.add(j)
-                    changed = True
-                
-                # Same types? Combine zones
-                elif t1 == t2:
-                    combined_z |= z2
-                    used.add(j)
-                    changed = True
-            
-            new_tuples.append((combined_z, combined_t))
-            used.add(i)
-        
-        contra_tuples = new_tuples
-    
-    result = [z | t for z, t in contra_tuples]
-    return sorted(result)
-```
+A contraquant byte encodes a set of *absence claims* of the form:
+> “No marks of type(s) **T** in zone(s) **Z**.”
 
+Where:
+- `zone_flags` **Z** is the low nibble (bits 0-3), interpreted as a set of up to 4 zone-groups.
+- `type_flags` **T** is the high nibble (bits 4-7), interpreted as a set of up to 4 type categories.
+
+A contraquant with `(Z, T)` semantically expands to the Cartesian product `Z × T` (up to 16 atomic claims).
+
+**Canonical form requirement:** Given any multiset of contraquants, implementations MUST reduce them to an equivalent set with the **minimum number of contraquants**, and MUST select a unique result.
+
+#### Step 1: Normalize and expand
+1. Parse each contraquant byte into `(Z, T)`.
+2. Reject any byte with `Z=0` or `T=0`.
+3. Expand each `(Z, T)` into the set of atomic claims  
+   `S ⊆ {1,2,4,8} × {0x10,0x20,0x40,0x80}` by enumerating each set bit in `Z` and each set bit in `T`.
+4. Let `S` be the union of atomic claims from all contraquants.
+
+#### Step 2: Minimum rectangle cover
+A single contraquant corresponds to a rectangle `Z×T` in the 4×4 atomic-claim grid.
+
+Canonical compaction is defined as a **minimum-cardinality rectangle cover** of `S`.
+
+Implementations MUST find a set of rectangles `R = {(Z_i, T_i)}` such that:
+- `⋃ (Z_i×T_i) = S`, and
+- `|R|` is minimal.
+
+**Upper bound:** `|R| ≤ 4`.
+
+#### Step 3: Deterministic tie-breaking
+If multiple minimum covers exist, implementations MUST choose the one whose sorted byte list  
+`B = sorted([Z_i | T_i])` is lexicographically smallest.
+
+#### Reference search procedure (informative but deterministic)
+Given the small 4×4 domain, a straightforward search is practical and yields deterministic results:
+1. Enumerate all candidate rectangles `(Z,T)` where `Z∈{1..15}` and `T∈{0x10..0xF0 step 0x10}`.
+2. For `k` in `1..4`, enumerate combinations of `k` candidates in increasing byte order, and select the first combination whose union equals `S`.
+3. Emit those `k` bytes, sorted ascending.
+
+#### Non-minimal compaction pitfall (informative)
+
+Naive strategies that merge type categories only when their zone masks are identical are NOT equivalent
+to the minimum rectangle cover requirement.
+
+**Counterexample:**
+
+Atomic claims:
+- A absent in zones {1,2}
+- B absent in zones {1,2}
+- A absent in zones {3,4}
+- C absent in zones {3,4}
+
+Per-type zone masks:
+- A: {1,2,3,4}
+- B: {1,2}
+- C: {3,4}
+
+Row-merging yields 3 contraquants:
+- A×{1,2,3,4}, B×{1,2}, C×{3,4}
+
+Minimum rectangle cover (cardinality 2):
+- (A|B)×{1,2}
+- (A|C)×{3,4}
+
+Canonical compaction MUST allow a type category to appear in multiple contraquants when doing so
+reduces total count.
 
 ## Decoding Specification (Normative)
 
