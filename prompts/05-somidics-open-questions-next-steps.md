@@ -96,7 +96,7 @@ This document captures unresolved questions, design alternatives under considera
 - How many private zones needed? (16 available)
 - Should there be sub-flags (medical vs. forensic vs. security)?
 - What are the privacy/consent implications?
-- **NEW v0.5:** Should private zones have corresponding anti-zones?
+- **NEW v0.5:** Should private zones have corresponding contrazones?
 
 **Who should define this?**
 - Medical examiner associations?
@@ -814,7 +814,7 @@ Encoded: @+147293-41
 **Metrics:**
 - Contraquant checking rate by context
 - Time cost of contraquant verification
-- Fraud rate with vs. without anti-checking
+- Fraud rate with vs. without contrachecking
 - Verifier satisfaction with discretion
 
 **Expected outcome:**
@@ -976,7 +976,7 @@ Encoded: @+147293-41
 - âœ… **Maximal compaction principle** (v0.5)
 - âœ… **Verifier discretion principle** (v0.5)
 - âœ… **Hyphen notation for contraquants** (v0.5)
-- âœ… **4 broad anti-zones excluding arms** (v0.5)
+- âœ… **4 broad contrazones excluding arms** (v0.5)
 - âœ… **Override principle (positives are exceptions)** (v0.5)
 
 ### Decisions Deferred

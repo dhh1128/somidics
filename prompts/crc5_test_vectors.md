@@ -31,7 +31,11 @@ These verify compatibility with USB 2.0 Specification:
 | 0x01    | 0x1      | 0b00010000001   | 11010                | Generic     |
 | 0x00    | 0x0      | 0b00000000000   | 01000                | Generic     |
 
-**Note:** USB tokens use bit-reversed input and output. Somidics do not use bit reversal for the 13-bit somid input.
+**Note on bit reversal:**
+- USB tokens use bit-reversed input (addresses and endpoints are reversed before CRC)
+- Somidics pass the 13-bit somid directly to CRC-5 (no input reversal)
+- The CRC-5-USB algorithm itself has refin=true (processes bits LSB-first), but this is internal to the algorithm, not a separate reversal step
+- For somidics: simply call `crc5_usb(somid, 13)` with the somid value directly
 
 ## Algorithm Verification
 

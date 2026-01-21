@@ -1,7 +1,7 @@
 # Appendix A — Annotated Bibliography for Somidion Prevalence Quantification  
 *(Tiered, non-exhaustive; intended as an agenda-setting resource rather than evidentiary proof)*
 
-This appendix enumerates **high-quality (Tier A) and acceptable secondary (Tier B)** sources that demonstrate the *feasibility* of quantifying somidion and anti-somidion prevalence.  
+This appendix enumerates **high-quality (Tier A) and acceptable secondary (Tier B)** sources that demonstrate the *feasibility* of quantifying somidion and contrasomidion prevalence.  
 Numeric values are illustrative only; readers are directed to the cited works for definitions, cohorts, and methods.
 
 ---
@@ -18,7 +18,7 @@ Journal of the American Academy of Dermatology, 55(3), 413–421.
 - Tattoo body regions (face, neck, arms, hands/fingers, trunk, legs, feet).  
 - “Exposed” vs “covered” tattoos (operationalized by site).  
 **Why relevant to somidics:**  
-Provides one of the strongest existing empirical bases for **region-specific** and **visibility-conditioned** somidions, and for whole-body anti-somidions (“no tattoos anywhere”).
+Provides one of the strongest existing empirical bases for **region-specific** and **visibility-conditioned** somidions, and for whole-body contrasomidions (“no tattoos anywhere”).
 
 ---
 
@@ -50,7 +50,7 @@ Demonstrates that **highly specific anatomical zones** (e.g., back of hand) are 
 - Total-body and regional melanocytic nevus prevalence under explicit clinical definitions (often ≥2 mm).  
 - Strong age dependence (childhood/adolescence vs older adults).  
 **Why relevant:**  
-Shows that “no nevi anywhere” and “nevi in region X” are both measurable and cohort-dependent, validating both somidions and anti-somidions.
+Shows that “no nevi anywhere” and “nevi in region X” are both measurable and cohort-dependent, validating both somidions and contrasomidions.
 
 ---
 

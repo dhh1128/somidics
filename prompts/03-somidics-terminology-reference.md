@@ -109,7 +109,7 @@ Bit 12: Multiplicity/Special (1 bit, context-dependent)
 
 **Usage examples:**
 - "The contrasomid uses flag encoding for zones and types"
-- "Anti-somids are represented as 2 hex digits"
+- "Contrasomids are represented as 2 hex digits"
 - "This contrasomid combines multiple zones and types"
 
 **Technical usage only:**

@@ -210,7 +210,7 @@ Verifier: [Accepts match]
 - âœ… Don't encode color (fades over time)
 - âœ… Fuzzy size categories (slight growth okay)
 - âœ… Broad texture categories (slight changes okay)
-- âœ… **Broad anti-zone categories** (hands+fingers+wrists collapsed)
+- âœ… **Broad contrazone categories** (hands+fingers+wrists collapsed)
 
 **Edge cases requiring reissuance:**
 
@@ -493,7 +493,7 @@ Random person matching by chance:
 
 **Grade: A-** - Well-designed for cultural sensitivity
 
-**V0.4 enhancement:** Contraquants' focus on hands+fingers+wrists (anti-zone 0) makes them MORE culturally acceptable than many positive zone options, since hands are visible even in conservative dress codes.
+**V0.4 enhancement:** Contraquants' focus on hands+fingers+wrists (contrazone 0) makes them MORE culturally acceptable than many positive zone options, since hands are visible even in conservative dress codes.
 
 **Critical success factor:** System supports same-gender verification option for both positive and contraquant verification.
 
@@ -895,7 +895,7 @@ Random person matching by chance:
 - Customer satisfaction: High (security vs convenience well-balanced)
 - Merchant adoption: Higher than v0.3 (better fraud prevention)
 - Transaction time: +15 seconds (low-value), +30 seconds (high-value)
-- **Verifier adoption of anti-checking:** 70-80% for transactions >$50
+- **Verifier adoption of contrachecking:** 70-80% for transactions >$50
 
 **Best for:** High-fraud areas, high-value cards, security-conscious users
 
@@ -1236,7 +1236,7 @@ Random person matching by chance:
 - Show body diagrams
 - Provide size comparison images (grain, coin)
 - Use clear language (no medical terms)
-- **NEW v0.5:** Show anti-zone diagrams (hands+wrists, face, ears, neck)
+- **NEW v0.5:** Show contrazone diagrams (hands+wrists, face, ears, neck)
 
 **4. Contraquant enrollment flow (v0.5):**
 ```

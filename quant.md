@@ -2,7 +2,7 @@
 
 ## A. Empirical plausibility (non-exhaustive grounding)
 
-Somidions are defined as visually observable, physically embodied features of a human subject, including both **positive features** (e.g., tattoos, scars, piercings, congenital anomalies) and **negative features** (anti-somidions), defined as the *absence* of features within a specified anatomical scope. The utility of somidions for discrimination does not depend on any single feature being rare; rather, it arises from the **composition of multiple weakly discriminating features**, combined with contextual constraints (e.g., visibility, stability over time, and resistance to spoofing).
+Somidions are defined as visually observable, physically embodied features of a human subject, including both **positive features** (e.g., tattoos, scars, piercings, congenital anomalies) and **negative features** (contrasomidions), defined as the *absence* of features within a specified anatomical scope. The utility of somidions for discrimination does not depend on any single feature being rare; rather, it arises from the **composition of multiple weakly discriminating features**, combined with contextual constraints (e.g., visibility, stability over time, and resistance to spoofing).
 
 While this paper does not attempt an exhaustive census of somidion prevalence, existing epidemiological, forensic, and population-survey literatures strongly suggest that:
 
@@ -10,7 +10,7 @@ While this paper does not attempt an exhaustive census of somidion prevalence, e
 
 2. **Anatomical localization materially increases discriminating power.** Even when a mark type is common at the whole-body level, its occurrence within a constrained region (e.g., facial sites, hands, oral cavity) is typically far less frequent.
 
-3. **Anti-somidions are often as informative as positive marks.** For example, the absence of any tattoos, any facial piercings, or any scars within a visible scope can exclude large fractions of a population under realistic priors.
+3. **contrasomidions are often as informative as positive marks.** For example, the absence of any tattoos, any facial piercings, or any scars within a visible scope can exclude large fractions of a population under realistic priors.
 
 4. **Prevalence varies substantially by cohort, culture, and age**, but this variability does not undermine the concept; instead, it reinforces the need for stratified models and conservative assumptions.
 
@@ -24,7 +24,7 @@ The following categories of sources already contain much of the raw material nee
 
 ### 1. Population surveys of body modification
 
-National or regionally representative surveys have reported prevalence of tattoos and piercings, sometimes with anatomical or visibility breakdowns. These sources are particularly valuable for whole-body priors and anti-somidions (e.g., “no tattoos anywhere”).
+National or regionally representative surveys have reported prevalence of tattoos and piercings, sometimes with anatomical or visibility breakdowns. These sources are particularly valuable for whole-body priors and contrasomidions (e.g., “no tattoos anywhere”).
 
 *Use for somidics:* whole-body presence/absence rates; cohort stratification; visibility proxies.
 
@@ -66,7 +66,7 @@ Let a somidion predicate \( S \) have population prevalence \( p \). The self-in
 I(S) = -\log_2(p)
 \]
 
-For anti-somidions (absence predicates):
+For contrasomidions (absence predicates):
 
 \[
 I(\neg S) = -\log_2(1 - p)
@@ -107,7 +107,7 @@ A disciplined somidion measurement program would include:
    Measurement by age, sex, geography, and cultural context to avoid false universality.
 
 4. **Presence and absence capture**  
-   Explicit recording of anti-somidions (“none observed”) rather than treating absence as missing data.
+   Explicit recording of contrasomidions (“none observed”) rather than treating absence as missing data.
 
 5. **Co-occurrence modeling**  
    Empirical estimation of correlation between somidions to replace independence assumptions.

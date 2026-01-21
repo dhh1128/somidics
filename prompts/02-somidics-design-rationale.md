@@ -643,7 +643,7 @@ Types: bit4=natural, bit5=scars, bit6=tattoos, bit7=piercings
 **Zone 0: Hands + Fingers + Wrists (30 positive zones)**
 - **Killer feature:** Verifiable without disrobing (visible with long sleeves)
 - **Cultural acceptability:** Universal
-- **High coverage:** Most compressed anti-zone
+- **High coverage:** Most compressed contrazone
 
 **Zone 1: Face (10 positive zones)**
 - Always visible
@@ -843,7 +843,7 @@ The extra precision doesn't help, and the notation becomes unwieldy.
 **Example:**
 ```
 @+147293-41
-  Positive: "Tattoo on left wrist" (zone 32, in anti-zone 0)
+  Positive: "Tattoo on left wrist" (zone 32, in contrazone 0)
   Anti: "No tattoos on hands+fingers+wrists"
 ```
 
@@ -962,18 +962,18 @@ This was impossible in v0.3 - contraquants enable it.
 - Verification tedious
 - Over-precision
 
-**Chosen:** 4 broad anti-zones that collapse 44 positive zones.
+**Chosen:** 4 broad contrazones that collapse 44 positive zones.
 
 #### Arms as Anti-Zone
 
-**Could have added:** Arms as 5th anti-zone
+**Could have added:** Arms as 5th contrazone
 
 **Rejected:**
 - Modesty concerns
 - Verification issues (clothing)
 - Would need 5 bits (waste one encoding)
 
-**Chosen:** 4 anti-zones excluding arms.
+**Chosen:** 4 contrazones excluding arms.
 
 ## Version Evolution Summary (Updated for v0.5)
 
@@ -1042,7 +1042,7 @@ This was impossible in v0.3 - contraquants enable it.
    - âœ… Maximal compaction principle
    - âœ… Verifier discretion (always optional)
    - âœ… Hyphen notation for negative assertions
-   - âœ… 4 broad anti-zones (hands+wrists, face, ears, neck)
+   - âœ… 4 broad contrazones (hands+wrists, face, ears, neck)
 
 ### Areas for Future Research
 

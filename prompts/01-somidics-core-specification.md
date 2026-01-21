@@ -514,7 +514,53 @@ Where U = universal set (all possible body states)
 - Positives first (if any), then antis (if any)
 - All components preceded by their operator (`+` or `-`)
 
-### Validation Rules
+#
+## Grammar Rules (Normative)
+
+### Well-formed Somidic Syntax
+
+A string is **well-formed** if and only if it matches ONE of these patterns:
+
+**Pattern 1: Positives only**
+```regex
+^@(\+\d{6})+$
+```
+
+**Pattern 2: Positives and contraquants**
+```regex
+^@(\+\d{6})+(-[0-9a-f]{2})+$
+```
+
+**Pattern 3: Contraquants only**
+```regex
+^@(-[0-9a-f]{2})+$
+```
+
+### Syntax Rules
+
+1. **Prefix:** MUST begin with `@`
+2. **Components:** At least one component required
+3. **Quants:** Format `+\d{6}` (plus sign, exactly 6 decimal digits, zero-padded)
+4. **Contraquants:** Format `-[0-9a-f]{2}` (minus sign, exactly 2 lowercase hex digits)
+5. **Ordering:** All quants MUST precede all contraquants (no interleaving)
+6. **Case:** Hex digits MUST be lowercase
+7. **Whitespace:** NO whitespace permitted anywhere
+8. **Trailing:** NO trailing operators permitted
+
+### Invalid Examples
+
+```
+147293          # Missing @ prefix
+@147293         # Missing + operator
+@+147293-4F     # Uppercase hex (must be lowercase)
+@-41+147293     # Wrong order (contraquants before quants)
+@ +147293       # Whitespace not permitted
+@+147293-       # Trailing operator
+@+147293-4      # Contraquant must be 2 hex digits
+@+12345         # Quant must be exactly 6 digits
+```
+
+## Validation Rules
 
 **Structure validation:**
 - Must start with `@`
@@ -1146,6 +1192,215 @@ def maximally_compact_anti_somidics(antis):
     result = [z | t for z, t in anti_tuples]
     return sorted(result)
 ```
+
+
+## Decoding Specification (Normative)
+
+### Quant Decoding Structure
+
+Given a valid quant (6-digit decimal number), decode to this structured format:
+
+```json
+{
+  "zone": <int 0-47>,
+  "zone_name": <string>,
+  "type": <int 0-3>,
+  "type_name": <string>,
+  "size": <int 0-3>,
+  "size_name": <string>,
+  "texture": <int 0-3>,
+  "texture_name": <string>,
+  "special": <int 0-1 or null>,
+  "special_meaning": <string or null>
+}
+```
+
+**Field specifications:**
+
+**type_name:** MUST be one of:
+- `"natural"` (type=00)
+- `"scar"` (type=01)
+- `"missing_anomalous"` (type=10)
+- `"artificial"` (type=11)
+
+**size_name:** MUST be one of:
+- `"grain"` (size=00)
+- `"fingernail"` (size=01)
+- `"coin"` (size=02)
+- `"larger"` (size=03)
+
+**texture_name:** Context-dependent on type (see Texture Encoding section)
+
+**special:** Context-dependent on type and texture (see Multiplicity/Special section)
+
+### Contraquant Decoding Structure
+
+Given a valid contraquant (2 hex digits), decode to this structured format:
+
+```json
+{
+  "zone_flags": <int 0-15>,
+  "type_flags": <int 0-15>,
+  "zones": <array of strings>,
+  "types": <array of strings>
+}
+```
+
+**zones array:** MUST contain zero or more of:
+- `"hands_fingers_wrists"` (bit 0 set)
+- `"face"` (bit 1 set)
+- `"ears"` (bit 2 set)
+- `"neck"` (bit 3 set)
+
+**types array:** MUST contain zero or more of:
+- `"natural"` (bit 4 set)
+- `"scars"` (bit 5 set)
+- `"tattoos"` (bit 6 set)
+- `"piercings"` (bit 7 set)
+
+### Example Decoding
+
+**Input quant:** `000018` (somid=0, CRC=18)
+```json
+{
+  "zone": 0,
+  "zone_name": "left_thumb_ring",
+  "type": 0,
+  "type_name": "natural",
+  "size": 0,
+  "size_name": "grain",
+  "texture": 0,
+  "texture_name": "flush",
+  "special": 0,
+  "special_meaning": "single"
+}
+```
+
+**Input contraquant:** `41`
+```json
+{
+  "zone_flags": 1,
+  "type_flags": 4,
+  "zones": ["hands_fingers_wrists"],
+  "types": ["tattoos"]
+}
+```
+
+### Zone Names (Normative)
+
+All implementations MUST use these exact zone names:
+
+| Zone | Name | Description |
+|------|------|-------------|
+| 0 | left_thumb_ring | Left thumb - ring portion |
+| 1 | left_thumb_upper | Left thumb - upper portion |
+| 2 | left_index_ring | Left index - ring portion |
+| 3 | left_index_upper | Left index - upper portion |
+| 4 | left_middle_ring | Left middle - ring portion |
+| 5 | left_middle_upper | Left middle - upper portion |
+| 6 | left_ring_ring | Left ring finger - ring portion |
+| 7 | left_ring_upper | Left ring finger - upper portion |
+| 8 | left_pinky_ring | Left pinky - ring portion |
+| 9 | left_pinky_upper | Left pinky - upper portion |
+| 10 | right_thumb_ring | Right thumb - ring portion |
+| 11 | right_thumb_upper | Right thumb - upper portion |
+| 12 | right_index_ring | Right index - ring portion |
+| 13 | right_index_upper | Right index - upper portion |
+| 14 | right_middle_ring | Right middle - ring portion |
+| 15 | right_middle_upper | Right middle - upper portion |
+| 16 | right_ring_ring | Right ring finger - ring portion |
+| 17 | right_ring_upper | Right ring finger - upper portion |
+| 18 | right_pinky_ring | Right pinky - ring portion |
+| 19 | right_pinky_upper | Right pinky - upper portion |
+| 20 | left_palm_thumb | Left palm - thumb side |
+| 21 | left_palm_pinky | Left palm - pinky side |
+| 22 | left_back_thumb | Left hand back - thumb side |
+| 23 | left_back_pinky | Left hand back - pinky side |
+| 24 | right_palm_thumb | Right palm - thumb side |
+| 25 | right_palm_pinky | Right palm - pinky side |
+| 26 | right_back_thumb | Right hand back - thumb side |
+| 27 | right_back_pinky | Right hand back - pinky side |
+| 28 | left_upper_arm | Left upper arm |
+| 29 | right_upper_arm | Right upper arm |
+| 30 | left_forearm | Left forearm |
+| 31 | right_forearm | Right forearm |
+| 32 | left_wrist | Left wrist |
+| 33 | right_wrist | Right wrist |
+| 34 | forehead | Forehead |
+| 35 | left_cheek | Left cheek |
+| 36 | right_cheek | Right cheek |
+| 37 | nose | Nose |
+| 38 | mouth | Lips/around mouth |
+| 39 | chin | Chin |
+| 40 | left_periorbital | Left eye/eyebrow area |
+| 41 | right_periorbital | Right eye/eyebrow area |
+| 42 | left_jaw | Left jaw |
+| 43 | right_jaw | Right jaw |
+| 44 | left_ear | Left ear |
+| 45 | right_ear | Right ear |
+| 46 | neck_front | Neck front |
+| 47 | neck_side_back | Neck side/back |
+
+
+## Exception Hierarchy (Normative)
+
+Implementations SHOULD define the following exception types:
+
+```python
+class SomidicError(ValueError):
+    """Base exception for all somidic-related errors."""
+    pass
+
+class SomidicSyntaxError(SomidicError):
+    """Raised when somidic doesn't match grammar rules.
+    
+    Examples:
+    - Missing @ prefix
+    - Wrong component format
+    - Uppercase hex digits
+    - Trailing operators
+    - Whitespace present
+    """
+    pass
+
+class SomidicChecksumError(SomidicError):
+    """Raised when CRC-5 validation fails for a quant.
+    
+    The quant is well-formed but the CRC doesn't match.
+    """
+    pass
+
+class SomidicZoneError(SomidicError):
+    """Raised when zone is invalid.
+    
+    Examples:
+    - Zone 48-63 in public somidic (reserved)
+    - Zone > 63 (out of range)
+    """
+    pass
+
+class SomidicTextureError(SomidicError):
+    """Raised when type-texture combination is invalid.
+    
+    Examples:
+    - Type 00 or 01 with Texture 11
+    - Type 11 with Texture 11
+    """
+    pass
+
+class SomidicNonCanonicalError(SomidicError):
+    """Raised when somidic is valid but not in canonical form.
+    
+    Examples:
+    - Quants not sorted
+    - Duplicate quants
+    - Contraquants not maximally compacted
+    - Contraquants not sorted
+    """
+    pass
+```
+
+**Note:** Languages other than Python should follow similar patterns appropriate to their exception/error handling conventions.
 
 ## Version History
 
