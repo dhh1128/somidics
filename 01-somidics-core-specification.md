@@ -11,14 +11,14 @@ Somidics is a human-verifiable, equipment-free biometric identification system b
 
 ### Information Flow
 
-**Positive Somidics:**
+**Quants (Somidion Encoding):**
 ```
 Physical mark → 13-bit encoding → +CRC-5 → Decimal → In notation
 Somidion     → Somid           → 18-bit  → Quant   → Somidic
 (on body)      (0-8191)         (0-262143) (6 digits) (@+147293)
 ```
 
-**Anti-Somidics:**
+**Contraquants:**
 ```
 Absence claim  → 8-bit encoding → Hex representation → In notation
 Contrasomidion → Contrasomid    → Contraquant       → Somidic
@@ -30,7 +30,7 @@ Contrasomidion → Contrasomid    → Contraquant       → Somidic
 @+147293-41
  │ │     │
  │ │     └─ Contraquant: "No tattoos on hands+wrists"
- │ └─────── Positive somidic: "Mole on left wrist"
+ │ └─────── Quant: "Mole on left wrist"
  └───────── Somidic prefix (always present)
 ```
 
@@ -42,7 +42,7 @@ Contrasomidion → Contrasomid    → Contraquant       → Somidic
 - **Optional discrimination**: Contraquants provide stronger ID at verifier's discretion
 - **Entropy target**: ~12 bits per somidion, 5-20× boost with contraquants
 
-## Positive Somidics Encoding
+## Quant Encoding (Somidions)
 
 ### Somid Structure (13 bits)
 
@@ -221,9 +221,9 @@ Size measured by **longest dimension**:
 - For anomalous features: Intensity (mild vs. severe)
 - For missing parts: Always 0 (no special meaning)
 
-## Anti-Somidics Encoding
+## Contraquants Encoding
 
-### Anti-Somidic Structure (8 bits = 2 hex digits)
+### Contraquant Structure (8 bits = 2 hex digits)
 
 An contraquant encodes a negative assertion: "No marks of type(s) X in zone(s) Y"
 
@@ -301,7 +301,7 @@ Types: 1111 = All types
 Meaning: "No marks of any kind anywhere in public zones"
 ```
 
-### Common Anti-Somidics Reference
+### Common Contraquants Reference
 
 ```
 11 = No natural marks on hands+fingers+wrists
@@ -361,7 +361,7 @@ This only occurs with 4 different zone patterns for the 4 type dimensions - very
 - Rare: 2-3 contraquants
 - Very rare: 4 contraquants
 
-## CRC-5 Specification (Positive Somidics Only)
+## CRC-5 Specification (Quants Only)
 
 ### Algorithm
 CRC-5-USB with polynomial 0x05 (x^5 + x^2 + 1)
@@ -425,7 +425,7 @@ anti := [0-9a-f]{2}    # Always 2 hex digits, lowercase, both nibbles non-zero
 
 **Key principles:**
 - All somidics start with `@`
-- Each positive somidic preceded by `+`
+- Each quant preceded by `+`
 - Each contraquant preceded by `-`
 - At least one component (positive or anti) required
 
@@ -474,7 +474,7 @@ Matches body states in:
   (P₁ ∪ P₂ ∪ ... ∪ Pₙ) \ (A₁ ∪ A₂ ∪ ... ∪ Aₘ)
 
 Where:
-  Pᵢ = states matching positive somidic i
+  Pᵢ = states matching quant i
   Aⱼ = states matching contraquant j
   + = union (∪)
   - = set difference (\)
@@ -499,7 +499,7 @@ Where U = universal set (all possible body states)
 
 ### Canonical Ordering Rules
 
-**For positive somidics:**
+**For quants:**
 1. Sort numerically ascending
 2. Remove duplicates
 3. Each preceded by `+`
@@ -569,7 +569,7 @@ A string is **well-formed** if and only if it matches ONE of these patterns:
 - No whitespace within somidic
 - No trailing operators
 
-**Positive somidics:**
+**Quants:**
 - Must be 6-digit decimal with valid CRC-5
 - Zone must be 0-47 (public zones)
 - Leading zeros required (e.g., `000123` not `123`)
@@ -660,7 +660,7 @@ When communicating somidic somidics verbally (e.g., over phone, during enrollmen
 **When receiving verbally:**
 1. Enter digits/letters as heard
 2. System validates:
-   - CRC-5 for positive somidics
+   - CRC-5 for quants
    - Format validation for contraquants
 3. If invalid after 2-3 attempts, request repeat
 4. If valid, accept and proceed
@@ -682,7 +682,7 @@ Decoding converts a somidic somidic string into structured attribute data. This 
 def parse_credential(somidic: str) -> tuple:
     """
     Parse somidic into positive and anti components.
-    Returns: (list of positive somidics, list of contraquants)
+    Returns: (list of quants, list of contraquants)
     """
     if not somidic.startswith('@'):
         raise ValueError("Somidic must start with '@'")
@@ -695,7 +695,7 @@ def parse_credential(somidic: str) -> tuple:
     parts = re.split(r'(\+|-)', s)
     
     positives = []
-    antis = []
+    contraquants = []
     
     for i in range(0, len(parts), 2):
         operator = parts[i]
@@ -714,7 +714,7 @@ def parse_credential(somidic: str) -> tuple:
 
 ### Decoding Positive Somidics (Normative)
 
-**Step 2: Decode each positive somidic to structured attributes**
+**Step 2: Decode each quant to structured attributes**
 
 All implementations MUST produce this structure:
 
@@ -785,7 +785,7 @@ For Type=2 (Missing/Anomalous):
 - Anomalous (Type=2, Texture≠0): "mild" or "severe"
 - Missing (Type=2, Texture=0): null
 
-### Decoding Anti-Somidics (Normative)
+### Decoding Contraquants (Normative)
 
 **Step 3: Decode each contraquant to structured attributes**
 
@@ -818,15 +818,15 @@ Bit 7 set: "piercings"
 
 **Example:**
 ```python
-def decode_anti_somidic(anti_hex: str) -> dict:
+def decode_contraquant(contra_hex: str) -> dict:
     """
     Decode 2-hex-digit contraquant to structured attributes.
     This function's output format is normative.
     """
-    anti_value = int(anti_hex, 16)
+    contra_value = int(contra_hex, 16)
     
-    zone_flags = anti_value & 0x0F
-    type_flags = (anti_value >> 4) & 0x0F
+    zone_flags = contra_value & 0x0F
+    type_flags = (contra_value >> 4) & 0x0F
     
     zones = []
     if zone_flags & 0x01: zones.append('hands_fingers_wrists')
@@ -918,7 +918,7 @@ This section provides guidance for converting structured attributes into human-r
 Include all attributes explicitly with maximum detail.
 ```
 
-#### Anti-Somidics
+#### Contraquants
 
 **Standard template:**
 ```
@@ -1004,7 +1004,7 @@ Implementations MAY:
 
 ### Positive Somidics Are Exceptions
 
-**Key rule:** Positive somidics always override contraquants in overlapping zones.
+**Key rule:** Quants always override contraquants in overlapping zones.
 
 **Example:**
 ```
@@ -1019,19 +1019,19 @@ Interpretation: "I have THIS specific tattoo on my left wrist,
 ```
 
 **Verification process:**
-1. Verify the specific positive somidic (tattoo on left wrist) ✓
+1. Verify the specific quant (tattoo on left wrist) ✓
 2. Scan the rest of hands+fingers+wrists for OTHER tattoos ✓
 3. Accept if both conditions met
 
 **Implementation:**
 ```python
-def verify_anti_somidic(person, anti_value, positive_zones):
+def verify_contraquant(person, contra_value, positive_zones):
     """
-    anti_value: 8-bit contraquant
-    positive_zones: list of zones claimed in positive somidics
+    contra_value: 8-bit contraquant
+    positive_zones: list of zones claimed in quants
     """
-    anti_zones = expand_anti_zone_flags_to_positive_zones(anti_value & 0x0F)
-    anti_types = extract_type_flags(anti_value >> 4)
+    anti_zones = expand_anti_zone_flags_to_positive_zones(contra_value & 0x0F)
+    anti_types = extract_type_flags(contra_value >> 4)
     
     # Remove zones already claimed in positives (exceptions)
     zones_to_check = [z for z in anti_zones if z not in positive_zones]
@@ -1055,7 +1055,7 @@ The verifier decides whether checking contraquants is worth the extra time based
 **Low-security context:**
 ```
 Somidic: @+147293-cf
-Verifier checks: Just positive somidic (30 seconds)
+Verifier checks: Just quant (30 seconds)
 Ignores: Contraquant
 ```
 
@@ -1075,7 +1075,7 @@ Verifier checks: Positive AND anti (120 seconds)
 
 ### Entropy Analysis (v0.6)
 
-**Single positive somidic:**
+**Single quant:**
 - Effective entropy: ~11.7 bits
 - Discrimination: ~1-in-3,300
 
@@ -1121,17 +1121,17 @@ Much stronger than PIN (1/10,000) which can be observed.
 # Extract all somidics from text
 @(\+\d{6}|-[0-9a-f]{2})+
 
-# Extract positive somidics
+# Extract quants
 (?<=\+)\d{6}
 
 # Extract contraquants
 (?<=-)[0-9a-f]{2}
 ```
 
-### Anti-Somidic Validation
+### Contraquant Validation
 
 ```python
-def validate_anti_somidic_byte(value):
+def validate_contraquant_byte(value):
     """
     Validate a single 8-bit contraquant
     """
@@ -1149,26 +1149,26 @@ def validate_anti_somidic_byte(value):
 ### Maximal Compaction Algorithm
 
 ```python
-def maximally_compact_anti_somidics(antis):
+def maximally_compact_contraquants(antis):
     """
     Compact contraquants to minimum count
     """
     changed = True
-    anti_tuples = [(a & 0x0F, a & 0xF0) for a in antis]
+    contra_tuples = [(a & 0x0F, a & 0xF0) for a in antis]
     
     while changed:
         changed = False
         new_tuples = []
         used = set()
         
-        for i, (z1, t1) in enumerate(anti_tuples):
+        for i, (z1, t1) in enumerate(contra_tuples):
             if i in used:
                 continue
             
             combined_z = z1
             combined_t = t1
             
-            for j, (z2, t2) in enumerate(anti_tuples[i+1:], i+1):
+            for j, (z2, t2) in enumerate(contra_tuples[i+1:], i+1):
                 if j in used:
                     continue
                 
@@ -1187,9 +1187,9 @@ def maximally_compact_anti_somidics(antis):
             new_tuples.append((combined_z, combined_t))
             used.add(i)
         
-        anti_tuples = new_tuples
+        contra_tuples = new_tuples
     
-    result = [z | t for z, t in anti_tuples]
+    result = [z | t for z, t in contra_tuples]
     return sorted(result)
 ```
 
