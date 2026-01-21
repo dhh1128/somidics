@@ -214,7 +214,42 @@ Size measured by **longest dimension**:
 
 ### Multiplicity/Special Bit (Bit 12)
 
-**Context-dependent meaning based on Type and Texture** - see v0.3 document for full details:
+**Context-dependent meaning based on Type and Texture**
+
+### Special Bit (Bit 12) - Complete Normative Mapping
+
+The meaning of bit 12 depends on Type and Texture context:
+
+| Type | Texture | Bit 12=0 | Bit 12=1 | Meaning Context |
+|------|---------|----------|----------|-----------------|
+| 00 (Natural) | 00 (Flush) | Single mark | Cluster of marks | Multiplicity |
+| 00 (Natural) | 01 (Raised) | Single mark | Cluster of marks | Multiplicity |
+| 00 (Natural) | 10 (Depressed) | Single mark | Cluster of marks | Multiplicity |
+| 01 (Scar) | 00 (Flush) | Single scar | Multiple scars | Multiplicity |
+| 01 (Scar) | 01 (Raised) | Single scar | Multiple scars | Multiplicity |
+| 01 (Scar) | 10 (Depressed) | Single scar | Multiple scars | Multiplicity |
+| 10 (Missing/Anom) | 00 (Missing) | Always 0 | N/A | Not used |
+| 10 (Missing/Anom) | 01 (Extra) | Mild | Severe | Intensity |
+| 10 (Missing/Anom) | 10 (Fused) | Mild | Severe | Intensity |
+| 10 (Missing/Anom) | 11 (Deformed) | Mild | Severe | Intensity |
+| 11 (Artificial) | 00 (Tattooed) | No writing/text | Has writing/text | Writing indicator |
+| 11 (Artificial) | 01 (Implanted) | Single implant | Multiple implants | Multiplicity |
+| 11 (Artificial) | 10 (Pierced) | Single piercing | Multiple piercings | Multiplicity |
+
+**Decoding algorithm:**
+1. First decode Type (bits 6-7) and Texture (bits 10-11)
+2. Use this table to determine bit 12 meaning
+3. For Missing (Type=10, Texture=00), bit 12 MUST be 0
+4. For all other valid combinations, bit 12 provides additional discrimination
+
+**Examples:**
+- Type=00, Texture=01, Bit12=0 → "Single raised natural mark"
+- Type=00, Texture=01, Bit12=1 → "Cluster of raised natural marks"
+- Type=11, Texture=00, Bit12=1 → "Tattoo with writing"
+- Type=10, Texture=10, Bit12=1 → "Severe fused tissue"
+
+**Implementation:** Decoders MUST use this table to correctly interpret bit 12.
+ - see v0.3 document for full details:
 - For natural marks/scars: Multiplicity (single vs. cluster)
 - For tattoos with ink: Writing indicator (contains text)
 - For piercings: Multiplicity (single vs. multiple)
@@ -404,8 +439,48 @@ The 6-digit decimal space (000000-999999) is divided into planes:
 **Plane 3: Special Values (786432-999999)**
 - Partial plane (213,568 values)
 - Test and special-purpose somidics
-- **999999: Always match** (test value)
-- **999998: Never match** (test value)
+
+### Plane 3: Special Values (786432-999999)
+
+**Test/magic values with special semantics:**
+
+#### 999999: "Always Match" Test Value
+
+```
+@+999999
+```
+
+**Validation:** Well-formed only (CRC check SKIPPED)
+**Semantics:** Matches any verification attempt  
+**Use:** System testing, capability verification
+**Decoding:** Returns special sentinel structure (all fields null/test values)
+**Production:** MUST NOT be used in real somidics
+
+#### 999998: "Never Match" Test Value
+
+```
+@+999998
+```
+
+**Validation:** Well-formed only (CRC check SKIPPED)
+**Semantics:** Fails all verification attempts
+**Use:** Negative testing, fraud detection testing
+**Decoding:** Returns special sentinel structure (all fields null/test values)
+**Production:** MUST NOT be used in real somidics
+
+#### Other Plane 3 Values (786432-999997)
+
+**Status:** Reserved for future use
+**Validation:** Currently treated as invalid
+
+**Implementation requirements:**
+- Parsers MUST recognize 999999 and 999998 as special values
+- Validators MUST skip CRC checking for these values
+- Validators MUST still enforce well-formedness (syntax)
+- Verifiers MUST implement the always-match/never-match semantics
+- Production systems SHOULD reject these values in user somidics
+- Test systems MAY use these values for verification testing
+
 
 **Note:** Contraquants use a separate encoding space (hex notation), not decimal plane space.
 
@@ -1002,15 +1077,19 @@ Implementations MAY:
 
 ## Override Principle
 
-### Positive Somidics Are Exceptions
+### Quants Specify Exceptions to Contraquant Exclusions
 
-**Key rule:** Quants always override contraquants in overlapping zones.
+**Key rule:** Quants and contraquants work together. Quants identify specific marks (inclusions), contraquants identify absences (exclusions), and quants create exceptions to contraquant exclusions.
+
+A somidic like `@+147293-41` means:
+1. "I HAVE this specific mark" (quant 147293)
+2. "I DO NOT have other marks of this type in this zone" (contraquant 41)
 
 **Example:**
 ```
 @+147293-41
-  Positive: "Tattoo with writing on left wrist" (zone 32)
-  Anti: "No tattoos on hands+fingers+wrists"
+  Quant (147293): "Tattoo with writing on left wrist" (zone 32)
+  Contraquant (41): "No tattoos on hands+fingers+wrists"
   
 Zone 32 (left wrist) is IN anti-zone 0 (hands+fingers+wrists).
 
