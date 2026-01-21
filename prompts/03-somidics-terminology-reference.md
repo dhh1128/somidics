@@ -1,4 +1,4 @@
-# Somidics Terminology & Notation Reference v0.4
+# Somidics Core Specification v0.6
 
 ## Core Terms
 
@@ -33,7 +33,7 @@
 ✗ Features everyone has (two eyes, nose)
 ✗ Clothing choices
 
-### Anti-Somidion (NEW in v0.4)
+### Anti-Somidion
 **Definition:** A claimed absence of marks of specific type(s) in specific zone(s) on a person's body.
 
 **Etymology:** From Greek *anti* (against, opposite) + *soma* (body) + *idio* (personal, unique)
@@ -42,14 +42,14 @@
 
 **Part of speech:** Noun, countable
 
-**Plural:** anti-somidions
+**Plural:** contrasomidions
 
 **Usage examples:**
-- "Her anti-somidion is 'no tattoos on hands or face'"
-- "Anti-somidions provide additional discrimination"
-- "The credential includes anti-somidions for stronger identification"
+- "Her contrasomidion is 'no tattoos on hands or face'"
+- "Contrasomidions provide additional discrimination"
+- "The somidic includes contrasomidions for stronger identification"
 
-**What qualifies as an anti-somidion:**
+**What qualifies as an contrasomidion:**
 ✓ No natural marks in zone(s)
 ✓ No scars in zone(s)
 ✓ No tattoos in zone(s)
@@ -85,7 +85,7 @@
 - Users never see or work with somids directly
 - Intermediate representation between somidion and somidic
 
-**Bit structure (v0.3+):**
+**Bit structure:**
 ```
 Bits 0-5: Zone (6 bits, 48 defined)
 Bits 6-7: Type (2 bits)
@@ -94,8 +94,8 @@ Bits 10-11: Texture (2 bits, context-dependent)
 Bit 12: Multiplicity/Special (1 bit, context-dependent)
 ```
 
-### Anti-Somid (NEW in v0.4)
-**Definition:** The 8-bit encoded representation of an anti-somidion's characteristics (zone flags + type flags).
+### Anti-Somid
+**Definition:** The 8-bit encoded representation of an contrasomidion's characteristics (zone flags + type flags).
 
 **Etymology:** From *anti* + *somid*
 
@@ -103,18 +103,18 @@ Bit 12: Multiplicity/Special (1 bit, context-dependent)
 
 **Part of speech:** Noun, countable
 
-**Plural:** anti-somids
+**Plural:** contrasomids
 
 **Value range:** 0x11-0xFF (excluding bytes with nibble = 0)
 
 **Usage examples:**
-- "The anti-somid uses flag encoding for zones and types"
+- "The contrasomid uses flag encoding for zones and types"
 - "Anti-somids are represented as 2 hex digits"
-- "This anti-somid combines multiple zones and types"
+- "This contrasomid combines multiple zones and types"
 
 **Technical usage only:**
 - Appears in specifications
-- Users see hex representation, not the term "anti-somid"
+- Users see hex representation, not the term "contrasomid"
 
 **Bit structure:**
 ```
@@ -131,8 +131,42 @@ Bits 4-7: Type flags (4 bits)
   Bit 7: Piercings/implants
 ```
 
+
+### Quant
+**Definition:** The 6-digit decimal number representing a somid with CRC-5, before notation is applied.
+
+**Etymology:** From "quantum" - a discrete unit
+
+**Pronunciation:** /kwɒnt/ (kwont)
+
+**Part of speech:** Noun, countable
+
+**Plural:** quants
+
+**Value range:** 000000-262143 (18-bit value as 6-digit decimal, zero-padded)
+
+**Usage examples:**
+- "The quant 147293 encodes a mole on the left wrist"
+- "Convert the somid to a quant by adding CRC-5"
+- "The quant becomes a somidic when properly notated: @+147293"
+
+**Relationship to somidic:**
+- Quant = just the number (147293)
+- Somidic = properly notated form (@+147293)
+- A somidic may contain multiple quants and/or contraquants
+
+**Technical usage:**
+- Appears in specifications and implementations
+- Users see the somidic, not the quant
+- The quant is the intermediate form between somid and somidic
+
+**Structure:**
+- 18-bit value: (somid << 5) | CRC-5
+- Plus plane offset (0 for humans)
+- Converted to decimal, zero-padded to 6 digits
+
 ### Somidic
-**Definition (noun):** The 6-digit decimal number that represents a somidion, including CRC-5 checksum for validation.
+**Definition (noun):** The complete properly-notated expression representing one or more somidions and/or contrasomidions, always beginning with `@` and using `+` and `-` operators.
 
 **Definition (adjective):** Relating to somidion-based identification and authentication.
 
@@ -147,15 +181,15 @@ Bits 4-7: Type flags (4 bits)
 **As noun - Value range:** 000000-999999 (6 decimal digits, zero-padded)
 
 **Usage examples (noun):**
-- "Enter your somidic: 147293"
-- "This credential contains somidics @147293:582047"
+- "Enter your somidic: @+147293"
+- "This somidic contains somidics @+147293+582047"
 - "Each somidic includes a CRC-5 checksum"
-- "The somidic 147293 encodes a mark on the left forearm"
+- "The somidic 147293 encodes a mark on the left wrist"
 
 **Usage examples (adjective):**
 - "somidic authentication system"
 - "somidic verification process"
-- "somidic-protected credential"
+- "somidic-protected somidic"
 - "somidic enrollment procedure"
 
 **Structure:**
@@ -163,8 +197,8 @@ Bits 4-7: Type flags (4 bits)
 - Plus plane offset (0 for humans)
 - Converted to decimal, zero-padded to 6 digits
 
-### Anti-Somidic (NEW in v0.4)
-**Definition (noun):** The 2-hex-digit representation of an anti-somidion, encoding zone and type flags.
+### Anti-Somidic
+**Definition (noun):** The 2-hex-digit representation of an contrasomidion, encoding zone and type flags.
 
 **Definition (adjective):** Relating to negative assertions about body marks.
 
@@ -173,23 +207,23 @@ Bits 4-7: Type flags (4 bits)
 **Pronunciation:** /ˌæntisoʊˈmɪdɪk/ (AN-tee-so-MID-ik)
 
 **Part of speech:**
-- Noun (countable): "an anti-somidic," "two anti-somidics"
-- Adjective: "anti-somidic assertion"
+- Noun (countable): "an contraquant," "two contraquants"
+- Adjective: "contraquant assertion"
 
 **As noun - Value range:** 0x11-0xFF (2 hex digits, both nibbles non-zero)
 
 **Usage examples (noun):**
-- "The anti-somidic 41 means 'no tattoos on hands+wrists'"
-- "This credential includes anti-somidics -cf"
-- "Anti-somidics provide optional discrimination enhancement"
+- "The contraquant 41 means 'no tattoos on hands+wrists'"
+- "This somidic includes contraquants @+147293-41"
+- "Contraquants provide optional discrimination enhancement"
 
 **Usage examples (adjective):**
-- "anti-somidic verification requires scanning zones"
-- "anti-somidic protection enhances security"
+- "contraquant verification requires scanning zones"
+- "contraquant protection enhances security"
 
 **Structure:**
 - 8-bit value: zone_flags | (type_flags << 4)
-- Represented as 2 hex digits
+- Represented as 2 hex digits (lowercase)
 - No CRC (only 256 possible values, both nibbles must be non-zero)
 
 ### Somidics
@@ -205,154 +239,184 @@ Bits 4-7: Type flags (4 bits)
 - "The potential of somidics for humanitarian use"
 
 **Usage examples (plural):**
-- "Enter your somidics: @147293:582047-cf" (v0.4: includes anti-somidics)
-- "How many somidics does this credential require?"
+- "Enter your somidics: @+147293+582047-cf"
+- "How many somidics does this somidic require?"
 - "Store the somidics in an array"
 
-## Notation Conventions
+## Notation Conventions (v0.6 UPDATE)
+
+### Complete Somidic Format
+
+**All somidics start with `@`:**
+- This prefix identifies the string as a somidic somidic
+- Required for all somidics (single, multiple, or pure anti)
+
+**Positive somidics:**
+- Each preceded by `+`
+- Format: 6 decimal digits (leading zeros required)
+
+**Contraquants:**
+- Each preceded by `-`
+- Format: 2 hex digits (lowercase, both nibbles non-zero)
 
 ### Single Positive Somidic
 
-**Format:** 6-digit decimal number, zero-padded
+**Format:** `@+` followed by 6-digit decimal
 
 **Examples:**
-- `147293`
-- `000016` (smallest valid human somidic)
-- `262143` (largest in Plane 0)
-- `999999` (special: always match)
+- `@+147293`
+- `@+000016` (smallest valid human somidic)
+- `@+262143` (largest in Plane 0)
 
 **In text:**
-- "somidic 147293"
-- "Enter somidic: 147293"
-- "Your somidic is 147293"
+- "somidic @+147293"
+- "Enter somidic: @+147293"
+- "Your somidic is @+147293"
 
-**Regex pattern:** `\b\d{6}\b`
+**Regex pattern:** `@\+\d{6}`
 
-### Single Anti-Somidic (NEW in v0.4)
+### Single Anti-Somidic
 
-**Format:** 2 hex digits (lowercase)
+**Format:** `@-` followed by 2 hex digits (lowercase)
 
 **Examples:**
-- `41` - No tattoos on hands+fingers+wrists
-- `42` - No tattoos on face
-- `cf` - No tattoos or piercings anywhere
-- `ff` - No marks of any kind anywhere
+- `@-41` - No tattoos on hands+fingers+wrists
+- `@-42` - No tattoos on face
+- `@-cf` - No tattoos or piercings anywhere
+- `@-ff` - No marks of any kind anywhere
 
 **In text:**
-- "anti-somidic 41"
-- "The anti-somidic cf excludes tattoos and piercings"
+- "contraquant @-41"
+- "somidic @-cf excludes tattoos and piercings"
 
-**Regex pattern:** `[0-9a-f]{2}` (excluding x0 and 0x patterns)
+**Regex pattern:** `@-[0-9a-f]{2}`
 
-### Positive Somidic with Anti-Somidics (NEW in v0.4)
+### Positive Somidic with Anti-Somidics
 
-**Format:** 6-digit decimal, hyphen, 2+ hex digits
+**Format:** `@+` positives, then `-` antis
 
 **Examples:**
-- `147293-41` (single positive, single anti)
-- `147293-cf` (single positive, single anti)
-- `147293-4143` (single positive, two antis - compacts to -43)
+- `@+147293-41` (single positive, single anti)
+- `@+147293-cf` (single positive, single anti)
+- `@+147293-41-cf` (single positive, two antis)
 
 **In text:**
-- "somidic 147293-41"
-- "Enter: 147293-cf"
+- "somidic @+147293-41"
+- "Enter: @+147293-cf"
 
-**Regex pattern:** `\d{6}-([0-9a-f]{2})+`
+**Regex pattern:** `@\+\d{6}(-[0-9a-f]{2})+`
 
-### Multiple Positive Somidics (Sets)
+### Multiple Positive Somidics
 
-**Format:** @ prefix, colon-separated, canonical sorted order
-
-**Structure:** `@somidic1:somidic2:somidic3`
-
-**Canonical ordering rule:** Always sort numerically ascending
+**Format:** `@+` followed by positives, each preceded by `+`
 
 **Examples:**
-- `@147293:582047` (two somidics)
-- `@147293:582047:923841` (three somidics)
+- `@+147293+582047` (two somidics)
+- `@+147293+582047+923841` (three somidics)
+
+**Canonical ordering:** Always numerically ascending
 
 **Invalid (not canonical):**
-- `@582047:147293` (wrong order)
-- `147293:582047` (missing @ prefix)
-- `@147293.582047` (wrong separator)
+- `@+582047+147293` (wrong order)
+- `147293+582047` (missing @ prefix)
 
 **In text:**
-- "somidics @147293:582047"
-- "Enter your somidics: @147293:582047:923841"
+- "somidics @+147293+582047"
+- "Enter your somidics: @+147293+582047+923841"
 
-**Regex pattern:** `@\d{6}(:\d{6})+`
+**Regex pattern:** `@\+\d{6}(\+\d{6})+`
 
-### Multiple Positives with Anti-Somidics (NEW in v0.4)
+### Multiple Positives with Anti-Somidics
 
-**Format:** @ prefix, colon-separated positives, hyphen, anti-somidics
+**Format:** `@+` positives, then `-` antis
 
 **Examples:**
-- `@147293:582047-cf` (two positives, one anti)
-- `@147293:582047:923841-4f8f` (three positives, two antis - compacts to -cf)
+- `@+147293+582047-cf` (two positives, one anti)
+- `@+147293+582047-41-cf` (two positives, two antis)
 
 **Canonical ordering:**
 - Positives: sorted numerically ascending
-- Anti-somidics: maximally compacted, then sorted numerically
+- Contraquants: maximally compacted, then sorted numerically
 
-**Regex pattern:** `@\d{6}(:\d{6})+-([0-9a-f]{2})+`
+**Regex pattern:** `@\+\d{6}(\+\d{6})+(-[0-9a-f]{2})+`
 
-### Pure Anti-Somidics (NEW in v0.4)
+### Pure Anti-Somidics
 
-**Format:** Hyphen, 2+ hex digits
+**Format:** `@-` followed by antis, each preceded by `-`
 
 **Examples:**
-- `-cf` (no tattoos or piercings anywhere)
-- `-ff` (no marks of any kind anywhere)
-- `-4f` (no tattoos anywhere)
+- `@-cf` (no tattoos or piercings anywhere)
+- `@-ff` (no marks of any kind anywhere)
+- `@-41-cf` (multiple antis - before compaction)
 
-**Use case:** Professional credentials (surgeon, lawyer, etc.)
+**Use case:** Professional somidics (surgeon, lawyer, etc.)
 
-**Regex pattern:** `-([0-9a-f]{2})+`
+**Regex pattern:** `@(-[0-9a-f]{2})+`
 
-### Complete Somidics Set Grammar (v0.4)
+### Complete Somidic Grammar (v0.6)
 
 ```
-somidic_set := positive_part [anti_part]
-             | anti_part
+somidic := '@' component+
 
-positive_part := '@'? decimal6 (':' decimal6)*
-anti_part := '-' hex_byte+
+component := '+' positive
+           | '-' anti
 
-decimal6 := [0-9]{6}
-hex_byte := [0-9a-f]{2}
+positive := \d{6}      # Always 6 digits, leading zeros required
+anti := [0-9a-f]{2}    # Always 2 hex digits, lowercase, both non-zero
 ```
 
-**Complete regex:** `^(@?\d{6}(:\d{6})*)?(-(([0-9a-f]{2})+))?$`
+**Complete regex:** `^@(\+\d{6}|-[0-9a-f]{2})+$`
+
+## Reading Aloud Conventions (v0.6 NEW SECTION)
+
+### Basic Protocol
+
+**Symbol pronunciation:**
+- `@` → (silent - implied by context)
+- `+` → "PLUS"
+- `-` → "MINUS"
+
+**Digit pronunciation:**
+- Group in threes: "one four seven, two nine three"
+- Always "zero" (never "oh" or "o")
+- Hex letters: "a", "b", "c", "d", "e", "f"
+
+### Examples
+
+```
+@+147293
+→ "PLUS one four seven, two nine three"
+
+@+147293+582047
+→ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven"
+
+@+147293-41
+→ "PLUS one four seven, two nine three, MINUS four one"
+
+@-cf
+→ "MINUS c f"
+
+@+147293-41-cf
+→ "PLUS one four seven, two nine three, MINUS four one, MINUS c f"
+```
 
 ## Terminology Hierarchy
 
-### v0.3 Hierarchy (Positive Only)
-```
-Somidion (physical mark)
-    ↓ encode as
-Somid (13-bit value)
-    ↓ add CRC-5
-18-bit combined value
-    ↓ add plane offset, convert to decimal
-Somidic (6-digit number)
-    ↓ multiple somidics
-Somidics set (@ notation)
-```
+### v0.6 Hierarchy (With Updated Notation)
 
-### v0.4 Hierarchy (With Anti-Somidics)
 ```
-Somidion (physical mark)          Anti-somidion (absence claim)
+Somidion (physical mark)          Contrasomidion (absence claim)
     ↓ encode                          ↓ encode
-Somid (13-bit)                    Anti-somid (8-bit)
+Somid (13-bit)                    Contrasomid (8-bit)
     ↓ add CRC-5                       ↓ (no CRC)
 18-bit combined                   8-bit value
     ↓ decimal                         ↓ hex
-Somidic (6 digits)                Anti-somidic (2 hex digits)
+Somidic (6 digits)                Contraquant (2 hex digits)
     ↓                                 ↓
-    └─────────────┬──────────────────┘
+    └─────────────┬───────────────────┘
                   ↓
-         Complete somidics set
-         (positives-antis notation)
+         Complete somidic
+         (@+ notation with - for antis)
 ```
 
 ## Terms by Context
@@ -360,14 +424,14 @@ Somidic (6 digits)                Anti-somidic (2 hex digits)
 ### User-Facing Language
 **Use these terms:**
 - "somidion" - the mark on your body
-- "anti-somidion" - what marks you DON'T have
-- "somidic" - the 6-digit number
-- "anti-somidic" - the 2-hex-digit exclusion
-- "Enter your somidic"
+- "contrasomidion" - what marks you DON'T have
+- "somidic" - the number in the somidic
+- "contraquant" - the exclusion in the somidic
+- "Enter your somidic: @+147293"
 - "Show your somidion"
 
 **Avoid these terms:**
-- "somid" / "anti-somid" (too technical)
+- "somid" / "contrasomid" (too technical)
 - "descriptor" (too technical)
 - "CRC" (implementation detail)
 - "bits" / "flags" (confusing)
@@ -375,21 +439,21 @@ Somidic (6 digits)                Anti-somidic (2 hex digits)
 ### Technical/Developer Documentation
 **Use these terms:**
 - "somid" - the 13-bit value
-- "anti-somid" - the 8-bit value
+- "contrasomid" - the 8-bit value
 - "CRC-5" - the checksum algorithm
 - "plane" - the 262k-value namespace
-- "canonical form" - for sorted sets
-- "flag encoding" - for anti-somid zones/types
-- "maximal compaction" - for anti-somidics
+- "canonical form" - for sorted somidics
+- "flag encoding" - for contrasomid zones/types
+- "maximal compaction" - for contraquants
 
 ### Academic Writing
 **Use these terms:**
-- "somidion" / "anti-somidion" - the physical features/absences
+- "somidion" / "contrasomidion" - the physical features/absences
 - "somidic" (noun/adj) - paralleling biometric
 - "somidics" - the field of study
 - "somidion-based authentication"
 - "equipment-free biometric primitive"
-- "negative assertions" - for anti-somidics
+- "negative assertions" - for contraquants
 - "verifier discretion" - for optional checking
 
 ## Pronunciation Guide
@@ -397,11 +461,11 @@ Somidic (6 digits)                Anti-somidic (2 hex digits)
 | Term | IPA | Simple |
 |------|-----|--------|
 | somidion | /soʊˈmɪdiən/ | so-MID-ee-ən |
-| anti-somidion | /ˌæntisoʊˈmɪdiən/ | AN-tee-so-MID-ee-ən |
+| contrasomidion | /ˌæntisoʊˈmɪdiən/ | AN-tee-so-MID-ee-ən |
 | somid | /ˈsoʊmɪd/ | SO-mid |
-| anti-somid | /ˈæntisoʊmɪd/ | AN-tee-SO-mid |
+| contrasomid | /ˈæntisoʊmɪd/ | AN-tee-SO-mid |
 | somidic | /soʊˈmɪdɪk/ | so-MID-ik |
-| anti-somidic | /ˌæntisoʊˈmɪdɪk/ | AN-tee-so-MID-ik |
+| contraquant | /ˌæntisoʊˈmɪdɪk/ | AN-tee-so-MID-ik |
 | somidics | /soʊˈmɪdɪks/ | so-MID-iks |
 
 **Stress pattern:** Emphasis on middle syllable for somidion/somidic/somidics, first syllable for somid
@@ -411,28 +475,28 @@ Somidic (6 digits)                Anti-somidic (2 hex digits)
 ### Questions
 - "What is your somidic?"
 - "Do you have a somidion you'd be willing to share?"
-- "What anti-somidics does this credential include?" (v0.4)
+- "What contraquants does this somidic include?"
 - "Can you show me your somidion?"
 
 ### Instructions
-- "Enter your somidic: 147293-41" (v0.4)
+- "Enter your somidic: @+147293-41"
 - "Choose a somidion on your hands or face"
-- "This credential contains somidics @147293:582047-cf" (v0.4)
-- "Scan the QR code to see the required somidics"
+- "This somidic is @+147293+582047-cf"
+- "Scan the QR code to see the required somidic"
 
 ### Descriptions
 - "Small raised mole on left forearm"
 - "Tattoo on right hand back, coin-sized"
-- "No tattoos on hands, fingers, or wrists" (v0.4 anti-somidic)
-- "No tattoos or piercings anywhere in public zones" (v0.4 anti-somidic)
+- "No tattoos on hands, fingers, or wrists"
+- "No tattoos or piercings anywhere in public zones"
 
 ### Technical
 - "Compute CRC-5 over the somid"
 - "The somidic passes validation"
-- "Encode the anti-somidion as flag bits" (v0.4)
-- "Maximally compact the anti-somidics" (v0.4)
+- "Encode the contrasomidion as flag bits"
+- "Maximally compact the contraquants"
 
-## Anti-Somidic Notation Details (v0.4)
+## Anti-Somidic Notation Details
 
 ### Common Anti-Somidics
 
@@ -473,58 +537,103 @@ ff = No marks of any kind anywhere
 Meaning: "No tattoos on hands+wrists or face"
 ```
 
-### Canonical Form Rules (v0.4)
+### Canonical Form Rules (v0.6)
 
 **Positive somidics:**
 1. Sort numerically ascending
 2. Remove duplicates
-3. Prefix with @ if multiple
+3. Each preceded by `+`
 
-**Anti-somidics:**
+**Contraquants:**
 1. Maximally compact (combine zones and types)
 2. Sort numerically ascending (as 8-bit values)
 3. Remove duplicates (automatic after compaction)
+4. Each preceded by `-`
 
-**Complete set:**
-- Positives (if any), hyphen, antis (if any)
-- Or just antis (pure anti-somidic credential)
+**Complete somidic:**
+- Always starts with `@`
+- Positives first (if any), then antis (if any)
+- All components explicitly marked with operator
 
 ## Translation Guidance
 
 ### Terms That Should NOT Be Translated
 - **Somidion** - Keep as-is (like "biometric")
-- **Anti-somidion** - Keep as-is
-- **Somid** / **Anti-somid** - Keep as-is (technical terms)
-- **Somidic** / **Anti-somidic** - Keep as-is
+- **Contrasomidion** - Keep as-is
+- **Somid** / **Contrasomid** - Keep as-is (technical terms)
+- **Somidic** / **Contraquant** - Keep as-is
 - **Somidics** - Keep as-is
 
 **Rationale:** These are technical terms with specific meanings. Translating them creates confusion and inconsistency across languages.
 
 ### Terms That SHOULD Be Translated
 - "mark on the body" → translate naturally
-- "absence of marks" → translate naturally (v0.4)
+- "absence of marks" → translate naturally
 - "6-digit number" / "2 hex digits" → translate naturally
 - "verification" → translate naturally
 - Body part names (hand, finger, face) → translate naturally
+- "PLUS" / "MINUS" (when reading aloud) → translate naturally
 
 ### Recommended Translation Pattern
 ```
-English: "Enter your somidic: a 6-digit number representing a mark, 
-          plus optional anti-somidics (2 hex digits each) for what you DON'T have"
-Spanish: "Ingrese su somidic: un número de 6 dígitos que representa una marca,
-          más anti-somidics opcionales (2 dígitos hexadecimales cada uno) 
+English: "Enter your somidic: a 6-digit number with an @ symbol and plus signs,
+          plus optional contraquants (MINUS and 2 hex digits) for what you DON'T have"
+Spanish: "Ingrese su credencial: un número de 6 dígitos con símbolo @ y signos más,
+          más contraquants opcionales (MENOS y 2 dígitos hexadecimales) 
           para lo que NO tiene"
 ```
 
-**Key principle:** Keep somidic/anti-somidic as loanwords, translate descriptive text.
+**Key principle:** Keep somidic/contraquant as loanwords, translate descriptive text.
+
+## Semantic Interpretation (v0.6 NEW)
+
+### Set Operations Reading
+
+**The notation represents mathematical set operations:**
+
+```
+@+P₁+P₂-A₁-A₂
+
+Reads as:
+  "Union of P₁ and P₂, minus union of A₁ and A₂"
+  
+Mathematically:
+  (P₁ ∪ P₂) \ (A₁ ∪ A₂)
+
+Where:
+  + = union (∪)
+  - = set difference (\)
+```
+
+**Examples:**
+```
+@+147293
+  = Set of bodies matching somidic 147293
+
+@+147293-41
+  = Set of bodies matching 147293, excluding those with hand tattoos
+  = P₁₄₇₂₉₃ \ A₄₁
+
+@-41
+  = Universal set, excluding those with hand tattoos
+  = U \ A₄₁
+```
 
 ## Version History
 
-**v0.4** - January 2026
-- Added anti-somidion, anti-somid, anti-somidic terminology
+**v0.6** - January 2026
+- Updated all notation examples to use `@+` prefix
+- Separated contraquants (each with `-` prefix)
+- Added reading aloud protocol section
+- Added semantic interpretation section
+- Updated regex patterns for new notation
+- All terminology unchanged (just notation format)
+
+**v0.5** - January 2026
+- Added contrasomidion, contrasomid, contraquant terminology
 - Hyphen notation for negative assertions
 - Maximal compaction principle
-- Updated all examples to include anti-somidics where relevant
+- Updated all examples to include contraquants where relevant
 
 **v0.3** - January 2026
 - Updated somid to 13 bits (from 10)

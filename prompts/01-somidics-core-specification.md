@@ -1,11 +1,11 @@
-# Somidics Core Specification v0.4
+# Somidics Core Specification v0.6
 
 ## Overview
 
-Somidics is a human-verifiable, equipment-free biometric identification system based on naturally occurring or intentional marks on the human body. Version 0.4 adds **anti-somidics** - negative assertions about marks NOT present on the body.
+Somidics is a human-verifiable, equipment-free biometric identification system based on naturally occurring or intentional marks on the human body. Version 0.6 updates notation for improved clarity and adds formal decoding/rendering specifications.
 
-**Version:** 0.4 (January 2026)
-**Previous versions:** 0.3, 0.2, 0.1 (see update documents for changes)
+**Version:** 0.5 (January 2026)
+**Previous versions:** 0.4, 0.3, 0.2, 0.1 (see update documents for changes)
 
 ## Core Concepts
 
@@ -13,24 +13,25 @@ Somidics is a human-verifiable, equipment-free biometric identification system b
 
 **Positive Somidics:**
 ```
-Physical mark → 13-bit encoding → +CRC-5 → Decimal representation
-Somidion     → Somid           → 18-bit  → Somidic
-(on body)      (0-8191)         (0-262143) (6 digits)
+Physical mark → 13-bit encoding → +CRC-5 → Decimal → In notation
+Somidion     → Somid           → 18-bit  → Quant   → Somidic
+(on body)      (0-8191)         (0-262143) (6 digits) (@+147293)
 ```
 
-**Anti-Somidics (NEW in v0.4):**
+**Anti-Somidics:**
 ```
-Absence claim → 8-bit encoding → Hex representation
-Anti-somidion → Zone+Type flags → Anti-somidic
-(not on body)   (0-255)          (2 hex digits)
+Absence claim  → 8-bit encoding → Hex representation → In notation
+Contrasomidion → Contrasomid    → Contraquant       → Somidic
+(not on body)    (0-255)          (2 hex digits)      (@-41)
 ```
 
-**Combined Notation:**
+**Combined Notation (v0.6 update):**
 ```
-147293-41
-  │     │
-  │     └─ Anti-somidic: "No tattoos on hands+wrists"
-  └─────── Positive somidic: "Mole on left wrist"
+@+147293-41
+ │ │     │
+ │ │     └─ Contraquant: "No tattoos on hands+wrists"
+ │ └─────── Positive somidic: "Mole on left wrist"
+ └───────── Somidic prefix (always present)
 ```
 
 ### Key Properties
@@ -38,8 +39,8 @@ Anti-somidion → Zone+Type flags → Anti-somidic
 - **Human-verifiable**: Ordinary person can check a match without training
 - **Memorable**: Holder remembers "mole on left wrist" not "147293"
 - **Privacy-preserving**: Fuzzy matching prevents overly strong identification
-- **Optional discrimination**: Anti-somidics provide stronger ID at verifier's discretion
-- **Entropy target**: ~12 bits per somidion, 5-20× boost with anti-somidics
+- **Optional discrimination**: Contraquants provide stronger ID at verifier's discretion
+- **Entropy target**: ~12 bits per somidion, 5-20× boost with contraquants
 
 ## Positive Somidics Encoding
 
@@ -168,21 +169,21 @@ Size measured by **longest dimension**:
 
 **Context-dependent meaning based on Type:**
 
-#### For Type=00 (Natural), Type=01 (Scar), Type=11 (Artificial with Texture≠10):
+#### For Type=00 (Natural) and Type=01 (Scar):
 
-**00: Flush/flat with skin**
+**00: Flush/flat**
 - No relief, same level as surrounding skin
 
-**01: Raised or depressed**
-- Natural 3D feature
-- Raised: bump, elevated mole, keloid, wart
-- Depressed: dimple, pit, indented scar
+**01: Raised**
+- Elevated above skin
+- Examples: bump, elevated mole, keloid, wart
 
-**10: Tattooed/inked**
-- Permanent ink marking in/under skin
+**10: Depressed**
+- Below skin level
+- Examples: dimple, pit, indented scar
 
-**11: Pierced/implanted**
-- Hole through skin or subdermal implant
+**11: INVALID**
+- This combination is not permitted
 
 #### For Type=10 (Missing/Anomalous):
 
@@ -191,15 +192,40 @@ Size measured by **longest dimension**:
 **10: Fused (joined parts)**
 **11: Deformed (misshapen)**
 
+#### For Type=11 (Artificial/Intentional):
+
+**00: Tattooed/inked**
+- Flush permanent ink/dye (tattoos, brands)
+
+**01: Implanted**
+- Raised subdermal implant (chip, bead)
+
+**10: Pierced**
+- Hole through skin (piercing, stud)
+
+**11: INVALID**
+- This combination is not permitted
+
+**Semantic alignment:**
+- 00: Flush across all types
+- 01: Raised/extra across all types
+- 10: Depressed/fused/pierced across all types
+- 11: Only valid for Type=10 (deformed)
+
 ### Multiplicity/Special Bit (Bit 12)
 
-**Context-dependent meaning based on Type and Texture** - see full specification in v0.3 document for details.
+**Context-dependent meaning based on Type and Texture** - see v0.3 document for full details:
+- For natural marks/scars: Multiplicity (single vs. cluster)
+- For tattoos with ink: Writing indicator (contains text)
+- For piercings: Multiplicity (single vs. multiple)
+- For anomalous features: Intensity (mild vs. severe)
+- For missing parts: Always 0 (no special meaning)
 
-## Anti-Somidics Encoding (NEW in v0.4)
+## Anti-Somidics Encoding
 
 ### Anti-Somidic Structure (8 bits = 2 hex digits)
 
-An anti-somidic encodes a negative assertion: "No marks of type(s) X in zone(s) Y"
+An contraquant encodes a negative assertion: "No marks of type(s) X in zone(s) Y"
 
 **Bits 0-3: Zone flags (4 bits)**
 **Bits 4-7: Type flags (4 bits)**
@@ -303,7 +329,7 @@ ff = No marks of any kind anywhere
 
 ### Maximal Compaction Principle
 
-**Anti-somidics are always maximally compacted** to minimize count.
+**Contraquants are always maximally compacted** to minimize count.
 
 Since both zones AND types are flags (bitmasks), you combine:
 - Zone bits for marks with same type constraints
@@ -311,7 +337,7 @@ Since both zones AND types are flags (bitmasks), you combine:
 
 **Example:**
 ```
-Input:  -41428182
+Input:  -41-42-81-82
   41 = No tattoos on hands+wrists
   42 = No tattoos on face
   81 = No piercings on hands+wrists
@@ -325,15 +351,15 @@ Compaction:
 Output: -c3 (No tattoos or piercings on hands+wrists or face)
 ```
 
-**Maximum anti-somidics in canonical form: 4**
+**Maximum contraquants in canonical form: 4**
 
 This only occurs with 4 different zone patterns for the 4 type dimensions - very rare in practice.
 
 **Typical usage:**
-- Most credentials: 0-1 anti-somidics
-- Common: 1 anti-somidic (e.g., `4f` or `cf`)
-- Rare: 2-3 anti-somidics
-- Very rare: 4 anti-somidics
+- Most somidics: 0-1 contraquants
+- Common: 1 contraquant (e.g., `4f` or `cf`)
+- Rare: 2-3 contraquants
+- Very rare: 4 contraquants
 
 ## CRC-5 Specification (Positive Somidics Only)
 
@@ -348,7 +374,7 @@ CRC-5-USB with polynomial 0x05 (x^5 + x^2 + 1)
 - Input reflection: true
 - Output reflection: true
 
-**Note:** Anti-somidics do NOT use CRC validation (only 256 possible values, both nibbles must be non-zero).
+**Note:** Contraquants do NOT use CRC validation (only 256 possible values, both nibbles must be non-zero).
 
 ## Plane Architecture
 
@@ -381,42 +407,94 @@ The 6-digit decimal space (000000-999999) is divided into planes:
 - **999999: Always match** (test value)
 - **999998: Never match** (test value)
 
-**Note:** Anti-somidics use a separate encoding space (hex notation), not decimal plane space.
+**Note:** Contraquants use a separate encoding space (hex notation), not decimal plane space.
 
-## Complete Notation Specification
+## Complete Notation Specification (v0.6 UPDATE)
 
 ### Notation Grammar
 
 ```
-somidic_set := positive_part [anti_part]
-             | anti_part
+somidic := '@' component+
 
-positive_part := '@'? decimal6 (':' decimal6)*
-anti_part := '-' hex_byte+
+component := '+' positive
+           | '-' anti
 
-decimal6 := [0-9]{6}
-hex_byte := [0-9a-f]{2}
+positive := \d{6}      # Always 6 digits, leading zeros required
+anti := [0-9a-f]{2}    # Always 2 hex digits, lowercase, both nibbles non-zero
 ```
 
-### Examples
+**Key principles:**
+- All somidics start with `@`
+- Each positive somidic preceded by `+`
+- Each contraquant preceded by `-`
+- At least one component (positive or anti) required
 
-**Positive only (v0.3 compatible):**
-```
-147293              Single positive somidic
-@147293:582047      Two positive somidics
-```
+### Notation Examples
 
-**Positive with anti (v0.4):**
+**Single positive:**
 ```
-147293-41           Single positive, single anti
-147293-4143         Single positive, two antis (compacts to -43)
-@147293:582047-cf   Two positives, one anti
+@+147293
 ```
 
-**Anti only (v0.4):**
+**Multiple positives:**
 ```
--cf                 Pure anti-somidic (no positives)
--ff                 No marks of any kind anywhere
+@+147293+582047
+@+147293+582047+923841
+```
+
+**Single positive with anti:**
+```
+@+147293-41
+```
+
+**Multiple positives with anti:**
+```
+@+147293+582047-cf
+```
+
+**Multiple positives with multiple antis:**
+```
+@+147293+582047-41-cf
+```
+
+**Pure contraquants (no positives):**
+```
+@-cf
+@-41-cf
+```
+
+### Semantic Interpretation
+
+The notation represents set operations:
+
+```
+@+P₁+P₂+...+Pₙ-A₁-A₂-...-Aₘ
+
+Matches body states in:
+  (P₁ ∪ P₂ ∪ ... ∪ Pₙ) \ (A₁ ∪ A₂ ∪ ... ∪ Aₘ)
+
+Where:
+  Pᵢ = states matching positive somidic i
+  Aⱼ = states matching contraquant j
+  + = union (∪)
+  - = set difference (\)
+```
+
+**Special case: Pure contraquants**
+```
+@-A₁-A₂-...-Aₘ
+
+Matches body states in:
+  U \ (A₁ ∪ A₂ ∪ ... ∪ Aₘ)
+
+Where U = universal set (all possible body states)
+```
+
+**Examples:**
+```
+@+147293        = Bodies matching somidic 147293
+@+147293-41     = Bodies matching 147293 AND lacking hand tattoos
+@-41            = All bodies lacking hand tattoos
 ```
 
 ### Canonical Ordering Rules
@@ -424,152 +502,467 @@ hex_byte := [0-9a-f]{2}
 **For positive somidics:**
 1. Sort numerically ascending
 2. Remove duplicates
-3. Prefix with @ if multiple
+3. Each preceded by `+`
 
-**For anti-somidics:**
+**For contraquants:**
 1. Maximally compact (combine zones and types)
 2. Sort numerically ascending (as 8-bit values)
 3. Remove duplicates (automatic after compaction)
+4. Each preceded by `-`
 
 **Overall format:**
-- Positives (if any), then hyphen, then antis (if any)
-- Hyphen required only if antis present
+- Positives first (if any), then antis (if any)
+- All components preceded by their operator (`+` or `-`)
 
 ### Validation Rules
+
+**Structure validation:**
+- Must start with `@`
+- Must have at least one component
+- Each component must be valid (`+\d{6}` or `-[0-9a-f]{2}`)
+- No whitespace within somidic
+- No trailing operators
 
 **Positive somidics:**
 - Must be 6-digit decimal with valid CRC-5
 - Zone must be 0-47 (public zones)
+- Leading zeros required (e.g., `000123` not `123`)
 
-**Anti-somidics:**
-- Must be pairs of hex digits (even character count)
+**Contraquants:**
+- Must be pairs of hex digits (even character count after `-`)
 - Each byte must have both nibbles non-zero
   - Invalid: 00, 01-0f, 10-f0 (meaningless assertions)
   - Valid: 11-ff (excluding x0 and 0x patterns)
 - Must be in maximally compacted canonical form
+- Hex digits must be lowercase (canonical)
 
-## Encoding Process
+**Canonical form:**
+- Positives in ascending order
+- Antis maximally compacted and in ascending order
+- Positives before antis
+- No duplicates
 
-### From Somidion to Positive Somidic
+### Invalid Examples
 
-(Same as v0.3 - see full specification for details)
-
-### From Anti-Somidion to Anti-Somidic
-
-**Step 1: Identify exclusion zones**
-- Which broad zones to exclude? (hands+wrists, face, ears, neck)
-- Set corresponding zone bits
-
-**Step 2: Identify exclusion types**
-- Which mark types to exclude? (natural, scars, tattoos, piercings)
-- Set corresponding type bits
-
-**Step 3: Combine into 8-bit value**
-```python
-anti_value = zone_flags | (type_flags << 4)
-anti_hex = format(anti_value, '02x')
+```
+@                       # No components
+147293                  # Missing @ prefix
+@+147293-               # Trailing operator
+@+-                     # Operators without values
+@+ 147293               # Whitespace
+@+582047+147293         # Wrong order (not ascending)
+@+147293-CF             # Uppercase hex (not canonical)
+@+147293-41-42          # Not maximally compacted (should be -43)
 ```
 
-**Step 4: Compact with other anti-somidics**
-```python
-# If multiple anti-somidics, maximally compact
-all_antis = [anti1, anti2, ...]
-compacted = maximally_compact(all_antis)
-anti_string = ''.join(format(a, '02x') for a in compacted)
+## Reading Aloud Protocol (v0.6 NEW SECTION)
+
+When communicating somidic somidics verbally (e.g., over phone, during enrollment), use the following protocol:
+
+### Basic Rules
+
+**Symbol pronunciation:**
+- `@` prefix: **Silent** (implied by context)
+- `+` operator: Say **"PLUS"**
+- `-` operator: Say **"MINUS"**
+
+**Digit pronunciation:**
+- Read in groups of three: "one four seven, two nine three"
+- Always say **"zero"** (never "oh" or "o")
+- Hex letters: Say letter name ("a", "b", "c", "d", "e", "f")
+
+### Examples
+
+**Single positive:**
+```
+@+147293
+→ "PLUS one four seven, two nine three"
 ```
 
-**Step 5: Combine with positive somidics**
-```python
-if positives and antis:
-    result = positive_string + '-' + anti_string
-elif antis only:
-    result = '-' + anti_string
-else:
-    result = positive_string
+**Multiple positives:**
+```
+@+147293+582047
+→ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven"
 ```
 
-## Decoding Process
-
-### From Somidic Set to Description
-
-**Step 1: Parse notation**
-```python
-if '-' in somidic_string:
-    positive_part, anti_part = somidic_string.split('-', 1)
-else:
-    positive_part = somidic_string
-    anti_part = None
+**Positive with anti:**
+```
+@+147293-41
+→ "PLUS one four seven, two nine three, MINUS four one"
 ```
 
-**Step 2: Decode positive somidics**
-```python
-if positive_part:
-    positives = [decode_positive(p) for p in positive_part.lstrip('@').split(':')]
+**Multiple positives with anti:**
+```
+@+147293+582047-cf
+→ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven, MINUS c f"
 ```
 
-**Step 3: Decode anti-somidics**
+**Pure anti:**
+```
+@-cf
+→ "MINUS c f"
+```
+
+**Multiple antis:**
+```
+@+147293-41-cf
+→ "PLUS one four seven, two nine three, MINUS four one, MINUS c f"
+```
+
+### Verification Protocol
+
+**When receiving verbally:**
+1. Enter digits/letters as heard
+2. System validates:
+   - CRC-5 for positive somidics
+   - Format validation for contraquants
+3. If invalid after 2-3 attempts, request repeat
+4. If valid, accept and proceed
+
+**Best practices:**
+- Speak clearly and at moderate pace
+- Pause between digit groups and operators
+- Repeat if any confusion
+- Confirm received value by reading back
+
+## Decoding Somidics (v0.6 NEW SECTION - NORMATIVE)
+
+Decoding converts a somidic somidic string into structured attribute data. This section defines the normative output format that all implementations MUST produce.
+
+### Parsing Somidics
+
+**Step 1: Extract components**
 ```python
-if anti_part:
-    # Parse pairs of hex digits
+def parse_credential(somidic: str) -> tuple:
+    """
+    Parse somidic into positive and anti components.
+    Returns: (list of positive somidics, list of contraquants)
+    """
+    if not somidic.startswith('@'):
+        raise ValueError("Somidic must start with '@'")
+    
+    # Remove @ prefix
+    s = somidic[1:]
+    
+    # Split on + and -, keeping delimiters
+    import re
+    parts = re.split(r'(\+|-)', s)
+    
+    positives = []
     antis = []
-    for i in range(0, len(anti_part), 2):
-        anti_value = int(anti_part[i:i+2], 16)
-        antis.append(decode_anti(anti_value))
+    
+    for i in range(0, len(parts), 2):
+        operator = parts[i]
+        value = parts[i+1] if i+1 < len(parts) else None
+        
+        if value is None:
+            raise ValueError(f"Operator '{operator}' without value")
+        
+        if operator == '+':
+            positives.append(value)
+        elif operator == '-':
+            antis.append(value)
+    
+    return positives, antis
 ```
 
-**Step 4: Generate description**
-```python
-description = {
-    'positives': [
-        "Single raised mole on left wrist, fingernail-sized",
-        "Scar on left cheek, coin-sized"
-    ],
-    'antis': [
-        "No tattoos or piercings anywhere in public zones"
-    ]
+### Decoding Positive Somidics (Normative)
+
+**Step 2: Decode each positive somidic to structured attributes**
+
+All implementations MUST produce this structure:
+
+```json
+{
+  "zone": <integer 0-63>,
+  "zone_category": "finger" | "hand" | "arm" | "face" | "ear_neck" | "reserved",
+  "zone_name": <string>,
+  "type": <integer 0-3>,
+  "type_name": "natural" | "scar" | "missing_anomalous" | "artificial",
+  "size": <integer 0-3>,
+  "size_name": "grain" | "fingernail" | "coin" | "larger",
+  "texture": <integer 0-3>,
+  "texture_name": <string>,
+  "special": <integer 0-1 or null>,
+  "special_meaning": <string or null>
 }
 ```
 
-### Anti-Somidic Decoding
+**Zone name mapping (normative):**
+```
+0: "left_thumb_ring"
+1: "left_thumb_upper"
+2: "left_index_ring"
+... (full mapping)
+32: "left_wrist"
+... etc
+```
 
+**Type name mapping (normative):**
+```
+0: "natural"
+1: "scar"
+2: "missing_anomalous"
+3: "artificial"
+```
+
+**Size name mapping (normative):**
+```
+0: "grain"
+1: "fingernail"
+2: "coin"
+3: "larger"
+```
+
+**Texture name mapping (context-dependent, normative):**
+
+For Type=0,1,3 (Natural, Scar, Artificial excluding tattoos):
+```
+0: "flush"
+1: "raised_depressed"
+2: "tattooed"
+3: "pierced"
+```
+
+For Type=2 (Missing/Anomalous):
+```
+0: "missing"
+1: "extra"
+2: "fused"
+3: "deformed"
+```
+
+**Special bit interpretation (context-dependent, normative):**
+- Natural marks/scars: "single" or "multiple"
+- Tattoos (Type=3, Texture=2): "no_writing" or "with_writing"
+- Piercings (Type=3, Texture=3): "single" or "multiple"
+- Anomalous (Type=2, Texture≠0): "mild" or "severe"
+- Missing (Type=2, Texture=0): null
+
+### Decoding Anti-Somidics (Normative)
+
+**Step 3: Decode each contraquant to structured attributes**
+
+All implementations MUST produce this structure:
+
+```json
+{
+  "zone_flags": <integer 0-15>,
+  "type_flags": <integer 0-15>,
+  "zones": [<array of zone category strings>],
+  "types": [<array of type category strings>]
+}
+```
+
+**Zone category strings (normative):**
+```
+Bit 0 set: "hands_fingers_wrists"
+Bit 1 set: "face"
+Bit 2 set: "ears"
+Bit 3 set: "neck"
+```
+
+**Type category strings (normative):**
+```
+Bit 4 set: "natural_marks"
+Bit 5 set: "scars"
+Bit 6 set: "tattoos"
+Bit 7 set: "piercings"
+```
+
+**Example:**
 ```python
-def decode_anti_somidic(anti_value):
+def decode_anti_somidic(anti_hex: str) -> dict:
     """
-    anti_value: 8-bit integer (0x11 through 0xFF, excluding x0 and 0x)
-    returns: human-readable description
+    Decode 2-hex-digit contraquant to structured attributes.
+    This function's output format is normative.
     """
+    anti_value = int(anti_hex, 16)
+    
     zone_flags = anti_value & 0x0F
     type_flags = (anti_value >> 4) & 0x0F
     
-    # Decode zone flags
     zones = []
-    if zone_flags & 0x01: zones.append('hands+fingers+wrists')
+    if zone_flags & 0x01: zones.append('hands_fingers_wrists')
     if zone_flags & 0x02: zones.append('face')
     if zone_flags & 0x04: zones.append('ears')
     if zone_flags & 0x08: zones.append('neck')
     
-    # Decode type flags
     types = []
-    if type_flags & 0x01: types.append('natural marks')
+    if type_flags & 0x01: types.append('natural_marks')
     if type_flags & 0x02: types.append('scars')
     if type_flags & 0x04: types.append('tattoos')
     if type_flags & 0x08: types.append('piercings')
     
-    zone_desc = ' or '.join(zones)
-    type_desc = ' or '.join(types)
-    
-    return f"No {type_desc} on {zone_desc}"
+    return {
+        'zone_flags': zone_flags,
+        'type_flags': type_flags,
+        'zones': zones,
+        'types': types
+    }
 ```
+
+### Complete Decoding Example
+
+**Input:** `@+147293-41`
+
+**Output:**
+```json
+{
+  "positives": [
+    {
+      "zone": 32,
+      "zone_category": "arm",
+      "zone_name": "left_wrist",
+      "type": 0,
+      "type_name": "natural",
+      "size": 2,
+      "size_name": "coin",
+      "texture": 1,
+      "texture_name": "raised_depressed",
+      "special": 0,
+      "special_meaning": "single"
+    }
+  ],
+  "antis": [
+    {
+      "zone_flags": 1,
+      "type_flags": 4,
+      "zones": ["hands_fingers_wrists"],
+      "types": ["tattoos"]
+    }
+  ]
+}
+```
+
+## Describing/Rendering Somidics (v0.6 NEW SECTION - NON-NORMATIVE)
+
+This section provides guidance for converting structured attributes into human-readable natural language descriptions. The specific templates and phrasing are **not normative**; implementers may adapt for their target language and context.
+
+### English Rendering Templates (Informative)
+
+#### Positive Somidics
+
+**Standard verbosity template:**
+```
+"{special_meaning} {texture_name} {size_name} {type_name} on {zone_name}"
+```
+
+**Examples:**
+```
+"Single raised coin-sized natural mark on left wrist"
+"Multiple flush fingernail-sized scars on right cheek"
+"Single tattooed coin-sized mark with writing on left forearm"
+```
+
+**Compact verbosity template:**
+```
+"{type_name} on {zone_name}"
+```
+
+**Examples:**
+```
+"Natural mark on left wrist"
+"Scar on right cheek"
+"Tattoo on left forearm"
+```
+
+**Full verbosity template:**
+```
+Include all attributes explicitly with maximum detail.
+```
+
+#### Anti-Somidics
+
+**Standard template:**
+```
+"No {types} on {zones}"
+```
+
+**Examples:**
+```
+"No tattoos on hands, fingers, or wrists"
+"No tattoos or piercings on face"
+"No marks of any kind anywhere in public zones"
+```
+
+**Compact template:**
+```
+"No {type} ({zone})"
+```
+
+**Examples:**
+```
+"No hand tattoos"
+"No facial piercings"
+```
+
+### Multi-Language Considerations (Informative)
+
+Different languages have different syntax patterns. Implementers should adapt templates accordingly:
+
+**Spanish example:**
+- English: "Single raised coin-sized natural mark on left wrist"
+- Spanish: "Marca natural única elevada del tamaño de una moneda en la muñeca izquierda"
+- Note: Adjectives typically follow nouns in Spanish
+
+**Japanese example:**
+- English: "Natural mark on left wrist"
+- Japanese: "左手首に自然な印"
+- Note: Location typically comes before the mark description
+
+**Arabic example:**
+- Note: Right-to-left text, different adjective placement
+
+### Context-Specific Rendering (Informative)
+
+**Enrollment context:**
+- Use full or standard verbosity
+- Help user confirm correct mark chosen
+- Example: "Single raised coin-sized natural mark on left wrist"
+
+**Verification display:**
+- Use standard verbosity for verifier
+- Include both encoded form and description
+- Example: 
+  ```
+  @+147293-41
+  "Single raised natural mark on left wrist"
+  "No tattoos on hands, fingers, or wrists"
+  ```
+
+**Compact display (e.g., card):**
+- Use compact verbosity to save space
+- Example: "Wrist mole / No hand tattoos"
+
+**Screen reader / accessibility:**
+- Use full verbosity for clarity
+- Spell out abbreviations
+- Example: "Single raised coin-sized natural mark on left wrist. No tattoos on hands, fingers, or wrists."
+
+### Implementation Guidance
+
+Implementations SHOULD:
+1. Decode somidics to normative structured format (required)
+2. Provide rendering functions for target language (recommended)
+3. Support multiple verbosity levels (recommended)
+4. Allow context-specific customization (optional)
+
+Implementations MAY:
+- Add additional rendering formats
+- Support custom templates
+- Provide translation capabilities
+- Include cultural adaptations
 
 ## Override Principle
 
 ### Positive Somidics Are Exceptions
 
-**Key rule:** Positive somidics always override anti-somidics in overlapping zones.
+**Key rule:** Positive somidics always override contraquants in overlapping zones.
 
 **Example:**
 ```
-147293-41
+@+147293-41
   Positive: "Tattoo with writing on left wrist" (zone 32)
   Anti: "No tattoos on hands+fingers+wrists"
   
@@ -588,7 +981,7 @@ Interpretation: "I have THIS specific tattoo on my left wrist,
 ```python
 def verify_anti_somidic(person, anti_value, positive_zones):
     """
-    anti_value: 8-bit anti-somidic
+    anti_value: 8-bit contraquant
     positive_zones: list of zones claimed in positive somidics
     """
     anti_zones = expand_anti_zone_flags_to_positive_zones(anti_value & 0x0F)
@@ -605,9 +998,9 @@ def verify_anti_somidic(person, anti_value, positive_zones):
 
 ### Critical Design Principle
 
-**Anti-somidics are ALWAYS optional from the verifier's perspective.**
+**Contraquants are ALWAYS optional from the verifier's perspective.**
 
-The verifier decides whether checking anti-somidics is worth the extra time based on:
+The verifier decides whether checking contraquants is worth the extra time based on:
 - Transaction value
 - Fraud risk
 - Time constraints
@@ -615,46 +1008,32 @@ The verifier decides whether checking anti-somidics is worth the extra time base
 
 **Low-security context:**
 ```
-Credential: 147293-cf
+Somidic: @+147293-cf
 Verifier checks: Just positive somidic (30 seconds)
-Ignores: Anti-somidic
+Ignores: Contraquant
 ```
 
 **High-security context:**
 ```
-Credential: 147293-cf
+Somidic: @+147293-cf
 Verifier checks: Positive AND anti (120 seconds)
 ```
 
 **This means:**
-- Credential holder encodes once
+- Somidic holder encodes once
 - Verifier pays cost only when justified
 - System degrades gracefully
 - Context-appropriate security
 
-## Multiple Somidics (Somidics Sets)
-
-### Notation
-Multiple somidics use @ prefix and colon separators for positives:
-
-**Format:** `@somidic1:somidic2:somidic3-anti1anti2`
-
-**Example:** `@147293:582047:923841-cf`
-
-### Purpose
-- Increased discrimination with multiple positives
-- Optional additional discrimination with antis
-- Flexibility for different security contexts
-
 ## Security Properties
 
-### Entropy Analysis (v0.4)
+### Entropy Analysis (v0.6)
 
 **Single positive somidic:**
 - Effective entropy: ~11.7 bits
 - Discrimination: ~1-in-3,300
 
-**With one anti-somidic:**
+**With one contraquant:**
 - Anti entropy: ~2-3 bits (depends on population)
 - Combined: ~14-15 bits
 - Discrimination: ~1-in-15,000 to 1-in-30,000
@@ -666,7 +1045,7 @@ Multiple somidics use @ prefix and colon separators for positives:
 
 ### Attack Resistance
 
-**Credit card theft with anti-somidic:**
+**Credit card theft with contraquant:**
 - Thief needs mark in correct zone (1/3,300)
 - AND needs absence of marks in anti-zone (1/5 - 1/3 depending on type)
 - Combined: 1/15,000 to 1/100,000
@@ -687,12 +1066,28 @@ Much stronger than PIN (1/10,000) which can be observed.
 
 ## Implementation Notes
 
+### Regex Patterns
+
+```regex
+# Complete somidic pattern
+^@(\+\d{6}|-[0-9a-f]{2})+$
+
+# Extract all somidics from text
+@(\+\d{6}|-[0-9a-f]{2})+
+
+# Extract positive somidics
+(?<=\+)\d{6}
+
+# Extract contraquants
+(?<=-)[0-9a-f]{2}
+```
+
 ### Anti-Somidic Validation
 
 ```python
 def validate_anti_somidic_byte(value):
     """
-    Validate a single 8-bit anti-somidic
+    Validate a single 8-bit contraquant
     """
     zone_nibble = value & 0x0F
     type_nibble = value & 0xF0
@@ -710,7 +1105,7 @@ def validate_anti_somidic_byte(value):
 ```python
 def maximally_compact_anti_somidics(antis):
     """
-    Compact anti-somidics to minimum count
+    Compact contraquants to minimum count
     """
     changed = True
     anti_tuples = [(a & 0x0F, a & 0xF0) for a in antis]
@@ -754,43 +1149,67 @@ def maximally_compact_anti_somidics(antis):
 
 ## Version History
 
-**v0.4 (Current)** - January 2026
-- Added anti-somidics (8-bit flag encoding)
+**v0.6 (Current)** - January 2026
+- Updated notation: `@` prefix required, `+` for positives, `-` for antis
+- Separated contraquants (each preceded by `-`)
+- Added read-aloud protocol section
+- Added formal decoding specification (normative)
+- Added rendering/describing guidance (non-normative)
+- Improved semantic clarity with set operation interpretation
+
+**v0.5** - January 2026
+- Added contraquants (8-bit flag encoding)
 - Hyphen notation for negative assertions
 - Maximal compaction principle
 - Override principle for positives
 - Verifier discretion principle
-- All positive somidic features unchanged from v0.3
 
 **v0.3** - January 2026
 - Context-dependent bit 12 encoding
 - Missing/Anomalous texture repurposing
 - Tattoo writing indicator
 - Anomalous intensifier
-- See 06-somidics-v0.3-update.md for details
 
 **v0.2** - January 2026
 - 13-bit somid (increased from 10-bit)
 - 48 public zones (increased from 31)
 - 5-bit CRC (reduced from 8-bit)
 - Multiplicity attribute added
-- See 06-somidics-v0.2-update.md for details
 
 **v0.1 (Initial)** - January 2026
 - 10-bit somid structure
 - 32 public human zones
 - CRC-8 validation
 
-## Migration from v0.3
+## Migration from v0.5
 
-**Breaking changes:** None - anti-somidics are purely additive
+**Breaking changes:** Notation format changed
 
-**Backward compatibility:**
-- v0.3 credentials remain valid (no hyphen = no antis)
-- v0.4 parsers can read v0.3 credentials
-- v0.3 parsers need update to support hyphen notation
+**Old notation (v0.5):**
+```
+147293              # Single positive
+@147293:582047      # Multiple positives
+147293-41           # With anti
+-cf                 # Pure anti
+```
 
-**Recommended approach:**
-- New credentials can use v0.4 format with anti-somidics
-- Existing v0.3 credentials continue to work
-- Optional: Upgrade high-value credentials to add anti-somidics
+**New notation (v0.6):**
+```
+@+147293            # Single positive
+@+147293+582047     # Multiple positives
+@+147293-41         # With anti
+@-cf                # Pure anti
+```
+
+**Migration approach:**
+- Update parsers to recognize new format
+- Provide conversion tool for old somidics
+- Support both formats during transition period
+- Document breaking change clearly
+
+**Benefits of new notation:**
+- Unambiguous in text (always starts with `@`)
+- Symmetric operators (`+` and `-`)
+- Clearer set operation semantics
+- Trivial read-aloud rules
+- No ambiguity with negative numbers
