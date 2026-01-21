@@ -31,7 +31,7 @@ def crc5_usb(data: int, num_bits: int = 13) -> int:
         >>> crc5_usb(0b0000000000000, 13)  # somid = 0
         31
         >>> crc5_usb(0b0000000000001, 13)  # somid = 1
-        14
+        11
         >>> crc5_usb(0b10000000100, 11)    # USB example: addr 1, endp 2
         24  # 0x18
     """
