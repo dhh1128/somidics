@@ -267,30 +267,30 @@ An contraquant encodes a negative assertion: "No marks of type(s) X in zone(s) Y
 
 Both zones and types use **FLAG encoding** (not enumeration), allowing combinations.
 
-### Anti-Zone Flags (Bits 0-3)
+### contra-zone Flags (Bits 0-3)
 
 Each bit represents a broad zone category:
 
 **Bit 0: Hands + Fingers + Wrists**
-- Covers positive zones: 0-19 (fingers), 20-27 (hands), 32-33 (wrists)
-- Total: 30 positive zones collapsed into 1 anti-zone
+- Covers quant zones: 0-19 (fingers), 20-27 (hands), 32-33 (wrists)
+- Total: 30 quant zones collapsed into 1 contra-zone
 - **Key feature:** Can verify even with long sleeves
 
 **Bit 1: Face**
-- Covers positive zones: 34-43 (all facial zones)
-- Total: 10 positive zones
+- Covers quant zones: 34-43 (all facial zones)
+- Total: 10 quant zones
 
 **Bit 2: Ears**
-- Covers positive zones: 44-45 (both ears)
-- Total: 2 positive zones
+- Covers quant zones: 44-45 (both ears)
+- Total: 2 quant zones
 
 **Bit 3: Neck**
-- Covers positive zones: 46-47 (neck front and side/back)
-- Total: 2 positive zones
+- Covers quant zones: 46-47 (neck front and side/back)
+- Total: 2 quant zones
 
-**Note:** Arms (positive zones 28-31) are intentionally NOT covered by any anti-zone for modesty reasons.
+**Note:** Arms (quant zones 28-31) are intentionally NOT covered by any contra-zone for modesty reasons.
 
-### Anti-Type Flags (Bits 4-7)
+### Contraquant-Type Flags (Bits 4-7)
 
 Each bit represents a mark type category:
 
@@ -539,48 +539,48 @@ The 6-digit decimal space (000000-999999) is divided into planes:
 ```
 somidic := '@' component+
 
-component := '+' positive
-           | '-' anti
+component := '+' quant
+           | '-' contra
 
-positive := \d{6}      # Always 6 digits, leading zeros required
-anti := [0-9a-fA-F]{2}    # Always 2 hex digits, both nibbles non-zero
+quant := \d{6}      # Always 6 digits, leading zeros required
+contra := [0-9a-fA-F]{2}    # Always 2 hex digits, both nibbles non-zero
 ```
 
 **Key principles:**
 - All somidics start with `@`
 - Each quant preceded by `+`
-- Each contraquant preceded by `-`
-- At least one component (positive or anti) required
+- Each contra preceded by `-`
+- At least one component (quant or contra) required
 
 ### Notation Examples
 
-**Single positive:**
+**Single quant:**
 ```
 @+147293
 ```
 
-**Multiple positives:**
+**Multiple quants:**
 ```
 @+147293+582047
 @+147293+582047+923841
 ```
 
-**Single positive with anti:**
+**Single quant with contraquant:**
 ```
 @+147293-41
 ```
 
-**Multiple positives with anti:**
+**Multiple quants with one contraquant:**
 ```
 @+147293+582047-cf
 ```
 
-**Multiple positives with multiple antis:**
+**Multiple quants with multiple contraquants:**
 ```
 @+147293+582047-41-cf
 ```
 
-**Pure contraquants (no positives):**
+**Pure contraquants (no quants):**
 ```
 @-cf
 @-41-cf
@@ -634,7 +634,7 @@ Where U = universal set (all possible body states)
 4. Each preceded by `-`
 
 **Overall format:**
-- Positives first (if any), then antis (if any)
+- Quants first (if any), then contraquants (if any)
 - All components preceded by their operator (`+` or `-`)
 
 #
@@ -644,12 +644,12 @@ Where U = universal set (all possible body states)
 
 A string is **well-formed** if and only if it matches ONE of these patterns:
 
-**Pattern 1: Positives only**
+**Pattern 1: quants only**
 ```regex
 ^@(\+\d{6})+$
 ```
 
-**Pattern 2: Positives and contraquants**
+**Pattern 2: quants and contraquants**
 ```regex
 ^@(\+\d{6})+(-[0-9a-f]{2})+$
 ```
@@ -717,9 +717,9 @@ Implementations MAY additionally provide:
 - Must be in maximally compacted canonical form
 
 **Canonical form:**
-- Positives in ascending order
-- Antis maximally compacted and in ascending order
-- Positives before antis
+- Quants in ascending order
+- Contraquants maximally compacted and in ascending order
+- Quants before contraquants
 - No duplicates
 - Hex digits in lowercase
 
@@ -754,37 +754,37 @@ When communicating somidic somidics verbally (e.g., over phone, during enrollmen
 
 ### Examples
 
-**Single positive:**
+**Single quant:**
 ```
 @+147293
 â†’ "PLUS one four seven, two nine three"
 ```
 
-**Multiple positives:**
+**Multiple quants:**
 ```
 @+147293+582047
 â†’ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven"
 ```
 
-**Positive with anti:**
+**quant with contraquant:**
 ```
 @+147293-41
 â†’ "PLUS one four seven, two nine three, MINUS four one"
 ```
 
-**Multiple positives with anti:**
+**Multiple quants with contraquant:**
 ```
 @+147293+582047-cf
 â†’ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven, MINUS c f"
 ```
 
-**Pure anti:**
+**Pure contraquant:**
 ```
 @-cf
 â†’ "MINUS c f"
 ```
 
-**Multiple antis:**
+**Multiple contraquant:**
 ```
 @+147293-41-cf
 â†’ "PLUS one four seven, two nine three, MINUS four one, MINUS c f"
@@ -814,9 +814,9 @@ Decoding converts a somidic somidic string into structured attribute data. This 
 
 **Step 1: Extract components**
 ```python
-def parse_credential(somidic: str) -> tuple:
+def parse_somidic(somidic: str) -> tuple:
     """
-    Parse somidic into positive and anti components.
+    Parse somidic into quant and contraquant components.
     Returns: (list of quants, list of contraquants)
     """
     if not somidic.startswith('@'):
@@ -829,8 +829,8 @@ def parse_credential(somidic: str) -> tuple:
     import re
     parts = re.split(r'(\+|-)', s)
     
-    positives = []
-    contraquants = []
+    quants = []
+    contras = []
     
     for i in range(0, len(parts), 2):
         operator = parts[i]
@@ -840,14 +840,14 @@ def parse_credential(somidic: str) -> tuple:
             raise ValueError(f"Operator '{operator}' without value")
         
         if operator == '+':
-            positives.append(value)
+            quants.append(value)
         elif operator == '-':
-            antis.append(value)
+            contras.append(value)
     
-    return positives, antis
+    return quants, contras
 ```
 
-### Decoding Positive Somidics (Normative)
+### Decoding Quants (Normative)
 
 **Step 2: Decode each quant to structured attributes**
 
@@ -1000,7 +1000,7 @@ def decode_contraquant(contra_hex: str) -> dict:
 **Output:**
 ```json
 {
-  "positives": [
+  "quants": [
     {
       "zone": 32,
       "zone_category": "arm",
@@ -1015,7 +1015,7 @@ def decode_contraquant(contra_hex: str) -> dict:
       "special_meaning": "single"
     }
   ],
-  "antis": [
+  "contraquants": [
     {
       "zone_flags": 1,
       "type_flags": 4,
@@ -1032,7 +1032,7 @@ This section provides guidance for converting structured attributes into human-r
 
 ### English Rendering Templates (Informative)
 
-#### Positive Somidics
+#### quant Somidics
 
 **Standard verbosity template:**
 ```
@@ -1161,7 +1161,7 @@ A somidic like `@+147293-41` means:
   Quant (147293): "Tattoo with writing on left wrist" (zone 32)
   Contraquant (41): "No tattoos on hands+fingers+wrists"
   
-Zone 32 (left wrist) is IN anti-zone 0 (hands+fingers+wrists).
+Zone 32 (left wrist) is IN contra-zone 0 (hands+fingers+wrists).
 
 Interpretation: "I have THIS specific tattoo on my left wrist,
                  but no OTHER tattoos on hands, fingers, or wrists"
@@ -1174,19 +1174,19 @@ Interpretation: "I have THIS specific tattoo on my left wrist,
 
 **Implementation:**
 ```python
-def verify_contraquant(person, contra_value, positive_zones):
+def verify_contraquant(person, contra_value, quant_zones):
     """
     contra_value: 8-bit contraquant
-    positive_zones: list of zones claimed in quants
+    quant_zones: list of zones claimed in quants
     """
-    anti_zones = expand_anti_zone_flags_to_positive_zones(contra_value & 0x0F)
-    anti_types = extract_type_flags(contra_value >> 4)
+    contra_zones = expand_contra_zone_flags_to_quant_zones(contra_value & 0x0F)
+    contra_types = extract_type_flags(contra_value >> 4)
     
-    # Remove zones already claimed in positives (exceptions)
-    zones_to_check = [z for z in anti_zones if z not in positive_zones]
+    # Remove zones already claimed in quants (exceptions)
+    zones_to_check = [z for z in contra_zones if z not in quant_zones]
     
-    # Verify no marks of anti_types exist in zones_to_check
-    return not has_marks(person, zones_to_check, anti_types)
+    # Verify no marks of contra_types exist in zones_to_check
+    return not has_marks(person, zones_to_check, contra_types)
 ```
 
 ## Verifier Discretion Principle
@@ -1211,7 +1211,7 @@ Ignores: Contraquant
 **High-security context:**
 ```
 Somidic: @+147293-cf
-Verifier checks: Positive AND anti (120 seconds)
+Verifier checks: quant AND contraquant (120 seconds)
 ```
 
 **This means:**
@@ -1229,20 +1229,20 @@ Verifier checks: Positive AND anti (120 seconds)
 - Discrimination: ~1-in-3,300
 
 **With one contraquant:**
-- Anti entropy: ~2-3 bits (depends on population)
+- Contra entropy: ~2-3 bits (depends on population)
 - Combined: ~14-15 bits
 - Discrimination: ~1-in-15,000 to 1-in-30,000
 
 **Multiple somidics:**
-- Two positives: ~23 bits = 1-in-8-million
-- Two positives + anti: ~26 bits = 1-in-60-million
-- Three positives + anti: ~38 bits = 1-in-250-billion
+- Two quants: ~23 bits = 1-in-8-million
+- Two quants + contra: ~26 bits = 1-in-60-million
+- Three quants + contra: ~38 bits = 1-in-250-billion
 
 ### Attack Resistance
 
 **Credit card theft with contraquant:**
 - Thief needs mark in correct zone (1/3,300)
-- AND needs absence of marks in anti-zone (1/5 - 1/3 depending on type)
+- AND needs absence of marks in contra-zone (1/5 - 1/3 depending on type)
 - Combined: 1/15,000 to 1/100,000
 
 Much stronger than PIN (1/10,000) which can be observed.
@@ -1598,7 +1598,7 @@ class SomidicNonCanonicalError(SomidicError):
 ## Version History
 
 **v0.6 (Current)** - January 2026
-- Updated notation: `@` prefix required, `+` for positives, `-` for antis
+- Updated notation: `@` prefix required, `+` for quants, `-` for contraquants
 - Separated contraquants (each preceded by `-`)
 - Added read-aloud protocol section
 - Added formal decoding specification (normative)
@@ -1609,7 +1609,7 @@ class SomidicNonCanonicalError(SomidicError):
 - Added contraquants (8-bit flag encoding)
 - Hyphen notation for negative assertions
 - Maximal compaction principle
-- Override principle for positives
+- Override principle for quants
 - Verifier discretion principle
 
 **v0.3** - January 2026
@@ -1635,18 +1635,18 @@ class SomidicNonCanonicalError(SomidicError):
 
 **Old notation (v0.5):**
 ```
-147293              # Single positive
-@147293:582047      # Multiple positives
-147293-41           # With anti
--cf                 # Pure anti
+147293              # Single quant
+@147293:582047      # Multiple quants
+147293-41           # With contraquant
+-cf                 # Pure contraquant
 ```
 
 **New notation (v0.6):**
 ```
-@+147293            # Single positive
-@+147293+582047     # Multiple positives
-@+147293-41         # With anti
-@-cf                # Pure anti
+@+147293            # Single quant
+@+147293+582047     # Multiple quants
+@+147293-41         # With contraquant
+@-cf                # Pure contraquant
 ```
 
 **Migration approach:**
