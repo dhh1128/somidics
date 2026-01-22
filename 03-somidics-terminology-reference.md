@@ -7,7 +7,7 @@
 
 **Etymology:** From Greek *soma* (body) + *idio* (personal, unique)
 
-**Pronunciation:** /soʊˈmɪdiən/ (so-MID-ee-ən)
+**Pronunciation:** /soÊŠËˆmÉªdiÉ™n/ (so-MID-ee-É™n)
 
 **Part of speech:** Noun, countable
 
@@ -20,25 +20,25 @@
 - "Choose a somidion you'd be willing to show a stranger"
 
 **What qualifies as a somidion:**
-✓ Mole, birthmark, freckle, discoloration
-✓ Scar (permanent)
-✓ Tattoo, piercing, implant
-✓ Missing part (fingertip, etc.)
-✓ Dimple, raised mole, unusual anatomical feature
+âœ“ Mole, birthmark, freckle, discoloration
+âœ“ Scar (permanent)
+âœ“ Tattoo, piercing, implant
+âœ“ Missing part (fingertip, etc.)
+âœ“ Dimple, raised mole, unusual anatomical feature
 
 **What does NOT qualify:**
-✗ Hairstyle (easily changed)
-✗ Temporary marks (bruise, recent wound)
-✗ Biometrics requiring equipment (fingerprint, iris pattern)
-✗ Features everyone has (two eyes, nose)
-✗ Clothing choices
+âœ— Hairstyle (easily changed)
+âœ— Temporary marks (bruise, recent wound)
+âœ— Biometrics requiring equipment (fingerprint, iris pattern)
+âœ— Features everyone has (two eyes, nose)
+âœ— Clothing choices
 
 ### Anti-Somidion
 **Definition:** A claimed absence of marks of specific type(s) in specific zone(s) on a person's body.
 
 **Etymology:** From Greek *anti* (against, opposite) + *soma* (body) + *idio* (personal, unique)
 
-**Pronunciation:** /ˌæntisoʊˈmɪdiən/ (AN-tee-so-MID-ee-ən)
+**Pronunciation:** /ËŒÃ¦ntisoÊŠËˆmÉªdiÉ™n/ (AN-tee-so-MID-ee-É™n)
 
 **Part of speech:** Noun, countable
 
@@ -50,23 +50,23 @@
 - "The somidic includes contrasomidions for stronger identification"
 
 **What qualifies as an contrasomidion:**
-✓ No natural marks in zone(s)
-✓ No scars in zone(s)
-✓ No tattoos in zone(s)
-✓ No piercings in zone(s)
-✓ Combinations of zones and types
+âœ“ No natural marks in zone(s)
+âœ“ No scars in zone(s)
+âœ“ No tattoos in zone(s)
+âœ“ No piercings in zone(s)
+âœ“ Combinations of zones and types
 
 **What does NOT qualify:**
-✗ Absence of hairstyle (not meaningful)
-✗ Absence of temporary marks (changes)
-✗ Absence of universal features
+âœ— Absence of hairstyle (not meaningful)
+âœ— Absence of temporary marks (changes)
+âœ— Absence of universal features
 
 ### Somid
-**Definition:** The 13-bit encoded representation of a somidion's characteristics (zone + type + size + texture + special), before CRC is computed.
+**Definition:** The 13-bit encoded representation of a somidion's characteristics (zone + type + size + texture + special), before checksum is computed.
 
 **Etymology:** Shortened from somidion, technical term
 
-**Pronunciation:** /ˈsoʊmɪd/ (SO-mid)
+**Pronunciation:** /ËˆsoÊŠmÉªd/ (SO-mid)
 
 **Part of speech:** Noun, countable
 
@@ -78,7 +78,7 @@
 - "The somid encodes zone, type, size, texture, and special bit"
 - "Valid somids range from 0 to 8191"
 - "Each somid corresponds to a specific combination of attributes"
-- "The somid is passed to the CRC-5 function"
+- "The somid is passed to the checksum function"
 
 **Technical usage only:**
 - Appears in specifications, not user-facing text
@@ -99,7 +99,7 @@ Bit 12: Multiplicity/Special (1 bit, context-dependent)
 
 **Etymology:** From *anti* + *somid*
 
-**Pronunciation:** /ˈæntisoʊmɪd/ (AN-tee-SO-mid)
+**Pronunciation:** /ËˆÃ¦ntisoÊŠmÉªd/ (AN-tee-SO-mid)
 
 **Part of speech:** Noun, countable
 
@@ -133,11 +133,11 @@ Bits 4-7: Type flags (4 bits)
 
 
 ### Quant
-**Definition:** The 6-digit decimal number representing a somid with CRC-5, before notation is applied.
+**Definition:** The 6-digit decimal number representing a somid with checksum, before notation is applied.
 
 **Etymology:** From "quantum" - a discrete unit
 
-**Pronunciation:** /kwɒnt/ (kwont)
+**Pronunciation:** /kwÉ’nt/ (kwont)
 
 **Part of speech:** Noun, countable
 
@@ -147,7 +147,7 @@ Bits 4-7: Type flags (4 bits)
 
 **Usage examples:**
 - "The quant 147293 encodes a mole on the left wrist"
-- "Convert the somid to a quant by adding CRC-5"
+- "Convert the somid to a quant by adding checksum"
 - "The quant becomes a somidic when properly notated: @+147293"
 
 **Relationship to somidic:**
@@ -161,7 +161,7 @@ Bits 4-7: Type flags (4 bits)
 - The quant is the intermediate form between somid and somidic
 
 **Structure:**
-- 18-bit value: (somid << 5) | CRC-5
+- 18-bit value: (somid << 5) | checksum
 - Plus plane offset (0 for humans)
 - Converted to decimal, zero-padded to 6 digits
 
@@ -172,7 +172,7 @@ Bits 4-7: Type flags (4 bits)
 
 **Etymology:** From somidion, paralleling "biometric/biometrics"
 
-**Pronunciation:** /soʊˈmɪdɪk/ (so-MID-ik)
+**Pronunciation:** /soÊŠËˆmÉªdÉªk/ (so-MID-ik)
 
 **Part of speech:** 
 - Noun (countable): "a somidic," "two somidics"
@@ -183,7 +183,7 @@ Bits 4-7: Type flags (4 bits)
 **Usage examples (noun):**
 - "Enter your somidic: @+147293"
 - "This somidic contains somidics @+147293+582047"
-- "Each somidic includes a CRC-5 checksum"
+- "Each somidic includes a checksum checksum"
 - "The somidic 147293 encodes a mark on the left wrist"
 
 **Usage examples (adjective):**
@@ -193,7 +193,7 @@ Bits 4-7: Type flags (4 bits)
 - "somidic enrollment procedure"
 
 **Structure:**
-- 18-bit value: (somid << 5) | CRC-5
+- 18-bit value: (somid << 5) | checksum
 - Plus plane offset (0 for humans)
 - Converted to decimal, zero-padded to 6 digits
 
@@ -204,7 +204,7 @@ Bits 4-7: Type flags (4 bits)
 
 **Etymology:** From *anti* + *somidic*
 
-**Pronunciation:** /ˌæntisoʊˈmɪdɪk/ (AN-tee-so-MID-ik)
+**Pronunciation:** /ËŒÃ¦ntisoÊŠËˆmÉªdÉªk/ (AN-tee-so-MID-ik)
 
 **Part of speech:**
 - Noun (countable): "an contraquant," "two contraquants"
@@ -372,9 +372,9 @@ anti := [0-9a-f]{2}    # Always 2 hex digits, lowercase, both non-zero
 ### Basic Protocol
 
 **Symbol pronunciation:**
-- `@` → (silent - implied by context)
-- `+` → "PLUS"
-- `-` → "MINUS"
+- `@` â†’ (silent - implied by context)
+- `+` â†’ "PLUS"
+- `-` â†’ "MINUS"
 
 **Digit pronunciation:**
 - Group in threes: "one four seven, two nine three"
@@ -385,19 +385,19 @@ anti := [0-9a-f]{2}    # Always 2 hex digits, lowercase, both non-zero
 
 ```
 @+147293
-→ "PLUS one four seven, two nine three"
+â†’ "PLUS one four seven, two nine three"
 
 @+147293+582047
-→ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven"
+â†’ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven"
 
 @+147293-41
-→ "PLUS one four seven, two nine three, MINUS four one"
+â†’ "PLUS one four seven, two nine three, MINUS four one"
 
 @-cf
-→ "MINUS c f"
+â†’ "MINUS c f"
 
 @+147293-41-cf
-→ "PLUS one four seven, two nine three, MINUS four one, MINUS c f"
+â†’ "PLUS one four seven, two nine three, MINUS four one, MINUS c f"
 ```
 
 ## Terminology Hierarchy
@@ -406,15 +406,15 @@ anti := [0-9a-f]{2}    # Always 2 hex digits, lowercase, both non-zero
 
 ```
 Somidion (physical mark)          Contrasomidion (absence claim)
-    ↓ encode                          ↓ encode
+    â†“ encode                          â†“ encode
 Somid (13-bit)                    Contrasomid (8-bit)
-    ↓ add CRC-5                       ↓ (no CRC)
+    â†“ add checksum                       â†“ (no CRC)
 18-bit combined                   8-bit value
-    ↓ decimal                         ↓ hex
+    â†“ decimal                         â†“ hex
 Somidic (6 digits)                Contraquant (2 hex digits)
-    ↓                                 ↓
-    └─────────────┬───────────────────┘
-                  ↓
+    â†“                                 â†“
+    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                  â†“
          Complete somidic
          (@+ notation with - for antis)
 ```
@@ -440,7 +440,7 @@ Somidic (6 digits)                Contraquant (2 hex digits)
 **Use these terms:**
 - "somid" - the 13-bit value
 - "contrasomid" - the 8-bit value
-- "CRC-5" - the checksum algorithm
+- "checksum" - the checksum algorithm
 - "plane" - the 262k-value namespace
 - "canonical form" - for sorted somidics
 - "flag encoding" - for contrasomid zones/types
@@ -460,13 +460,13 @@ Somidic (6 digits)                Contraquant (2 hex digits)
 
 | Term | IPA | Simple |
 |------|-----|--------|
-| somidion | /soʊˈmɪdiən/ | so-MID-ee-ən |
-| contrasomidion | /ˌæntisoʊˈmɪdiən/ | AN-tee-so-MID-ee-ən |
-| somid | /ˈsoʊmɪd/ | SO-mid |
-| contrasomid | /ˈæntisoʊmɪd/ | AN-tee-SO-mid |
-| somidic | /soʊˈmɪdɪk/ | so-MID-ik |
-| contraquant | /ˌæntisoʊˈmɪdɪk/ | AN-tee-so-MID-ik |
-| somidics | /soʊˈmɪdɪks/ | so-MID-iks |
+| somidion | /soÊŠËˆmÉªdiÉ™n/ | so-MID-ee-É™n |
+| contrasomidion | /ËŒÃ¦ntisoÊŠËˆmÉªdiÉ™n/ | AN-tee-so-MID-ee-É™n |
+| somid | /ËˆsoÊŠmÉªd/ | SO-mid |
+| contrasomid | /ËˆÃ¦ntisoÊŠmÉªd/ | AN-tee-SO-mid |
+| somidic | /soÊŠËˆmÉªdÉªk/ | so-MID-ik |
+| contraquant | /ËŒÃ¦ntisoÊŠËˆmÉªdÉªk/ | AN-tee-so-MID-ik |
+| somidics | /soÊŠËˆmÉªdÉªks/ | so-MID-iks |
 
 **Stress pattern:** Emphasis on middle syllable for somidion/somidic/somidics, first syllable for somid
 
@@ -491,7 +491,7 @@ Somidic (6 digits)                Contraquant (2 hex digits)
 - "No tattoos or piercings anywhere in public zones"
 
 ### Technical
-- "Compute CRC-5 over the somid"
+- "Compute checksum over the somid"
 - "The somidic passes validation"
 - "Encode the contrasomidion as flag bits"
 - "Maximally compact the contraquants"
@@ -567,19 +567,19 @@ Meaning: "No tattoos on hands+wrists or face"
 **Rationale:** These are technical terms with specific meanings. Translating them creates confusion and inconsistency across languages.
 
 ### Terms That SHOULD Be Translated
-- "mark on the body" → translate naturally
-- "absence of marks" → translate naturally
-- "6-digit number" / "2 hex digits" → translate naturally
-- "verification" → translate naturally
-- Body part names (hand, finger, face) → translate naturally
-- "PLUS" / "MINUS" (when reading aloud) → translate naturally
+- "mark on the body" â†’ translate naturally
+- "absence of marks" â†’ translate naturally
+- "6-digit number" / "2 hex digits" â†’ translate naturally
+- "verification" â†’ translate naturally
+- Body part names (hand, finger, face) â†’ translate naturally
+- "PLUS" / "MINUS" (when reading aloud) â†’ translate naturally
 
 ### Recommended Translation Pattern
 ```
 English: "Enter your somidic: a 6-digit number with an @ symbol and plus signs,
           plus optional contraquants (MINUS and 2 hex digits) for what you DON'T have"
-Spanish: "Ingrese su credencial: un número de 6 dígitos con símbolo @ y signos más,
-          más contraquants opcionales (MENOS y 2 dígitos hexadecimales) 
+Spanish: "Ingrese su credencial: un nÃºmero de 6 dÃ­gitos con sÃ­mbolo @ y signos mÃ¡s,
+          mÃ¡s contraquants opcionales (MENOS y 2 dÃ­gitos hexadecimales) 
           para lo que NO tiene"
 ```
 
@@ -592,16 +592,16 @@ Spanish: "Ingrese su credencial: un número de 6 dígitos con símbolo @ y signo
 **The notation represents mathematical set operations:**
 
 ```
-@+P₁+P₂-A₁-A₂
+@+Pâ‚+Pâ‚‚-Aâ‚-Aâ‚‚
 
 Reads as:
-  "Union of P₁ and P₂, minus union of A₁ and A₂"
+  "Union of Pâ‚ and Pâ‚‚, minus union of Aâ‚ and Aâ‚‚"
   
 Mathematically:
-  (P₁ ∪ P₂) \ (A₁ ∪ A₂)
+  (Pâ‚ âˆª Pâ‚‚) \ (Aâ‚ âˆª Aâ‚‚)
 
 Where:
-  + = union (∪)
+  + = union (âˆª)
   - = set difference (\)
 ```
 
@@ -612,11 +612,11 @@ Where:
 
 @+147293-41
   = Set of bodies matching 147293, excluding those with hand tattoos
-  = P₁₄₇₂₉₃ \ A₄₁
+  = Pâ‚â‚„â‚‡â‚‚â‚‰â‚ƒ \ Aâ‚„â‚
 
 @-41
   = Universal set, excluding those with hand tattoos
-  = U \ A₄₁
+  = U \ Aâ‚„â‚
 ```
 
 ## Version History

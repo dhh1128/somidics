@@ -13,25 +13,25 @@ Somidics is a human-verifiable, equipment-free biometric identification system b
 
 **Quants (Somidion Encoding):**
 ```
-Physical mark → 13-bit encoding → +CRC-5 → Decimal → In notation
-Somidion     → Somid           → 18-bit  → Quant   → Somidic
+Physical mark â†’ 13-bit encoding â†’ +checksum â†’ Decimal â†’ In notation
+Somidion     â†’ Somid           â†’ 18-bit  â†’ Quant   â†’ Somidic
 (on body)      (0-8191)         (0-262143) (6 digits) (@+147293)
 ```
 
 **Contraquants:**
 ```
-Absence claim  → 8-bit encoding → Hex representation → In notation
-Contrasomidion → Contrasomid    → Contraquant       → Somidic
+Absence claim  â†’ 8-bit encoding â†’ Hex representation â†’ In notation
+Contrasomidion â†’ Contrasomid    â†’ Contraquant       â†’ Somidic
 (not on body)    (0-255)          (2 hex digits)      (@-41)
 ```
 
 **Combined Notation (v0.6 update):**
 ```
 @+147293-41
- │ │     │
- │ │     └─ Contraquant: "No tattoos on hands+wrists"
- │ └─────── Quant: "Mole on left wrist"
- └───────── Somidic prefix (always present)
+ â”‚ â”‚     â”‚
+ â”‚ â”‚     â””â”€ Contraquant: "No tattoos on hands+wrists"
+ â”‚ â””â”€â”€â”€â”€â”€â”€â”€ Quant: "Mole on left wrist"
+ â””â”€â”€â”€â”€â”€â”€â”€â”€â”€ Somidic prefix (always present)
 ```
 
 ### Key Properties
@@ -40,7 +40,7 @@ Contrasomidion → Contrasomid    → Contraquant       → Somidic
 - **Memorable**: Holder remembers "mole on left wrist" not "147293"
 - **Privacy-preserving**: Fuzzy matching prevents overly strong identification
 - **Optional discrimination**: Contraquants provide stronger ID at verifier's discretion
-- **Entropy target**: ~12 bits per somidion, 5-20× boost with contraquants
+- **Entropy target**: ~12 bits per somidion, 5-20Ã— boost with contraquants
 
 ## Quant Encoding (Somidions)
 
@@ -243,10 +243,10 @@ The meaning of bit 12 depends on Type and Texture context:
 4. For all other valid combinations, bit 12 provides additional discrimination
 
 **Examples:**
-- Type=00, Texture=01, Bit12=0 → "Single raised natural mark"
-- Type=00, Texture=01, Bit12=1 → "Cluster of raised natural marks"
-- Type=11, Texture=00, Bit12=1 → "Tattoo with writing"
-- Type=10, Texture=10, Bit12=1 → "Severe fused tissue"
+- Type=00, Texture=01, Bit12=0 â†’ "Single raised natural mark"
+- Type=00, Texture=01, Bit12=1 â†’ "Cluster of raised natural marks"
+- Type=11, Texture=00, Bit12=1 â†’ "Tattoo with writing"
+- Type=10, Texture=10, Bit12=1 â†’ "Severe fused tissue"
 
 **Implementation:** Decoders MUST use this table to correctly interpret bit 12.
  - see v0.3 document for full details:
@@ -379,9 +379,9 @@ Input:  -41-42-81-82
   82 = No piercings on face
 
 Compaction:
-  Step 1: Combine 0x41+0x42 → 0x43 (same type, OR zones)
-  Step 2: Combine 0x81+0x82 → 0x83 (same type, OR zones)
-  Step 3: Combine 0x43+0x83 → 0xC3 (same zones, OR types)
+  Step 1: Combine 0x41+0x42 â†’ 0x43 (same type, OR zones)
+  Step 2: Combine 0x81+0x82 â†’ 0x83 (same type, OR zones)
+  Step 3: Combine 0x43+0x83 â†’ 0xC3 (same zones, OR types)
 
 Output: -c3 (No tattoos or piercings on hands+wrists or face)
 ```
@@ -396,20 +396,68 @@ This only occurs with 4 different zone patterns for the 4 type dimensions - very
 - Rare: 2-3 contraquants
 - Very rare: 4 contraquants
 
-## CRC-5 Specification (Quants Only)
+## Checksum Specification (Quants Only)
 
 ### Algorithm
-CRC-5-USB with polynomial 0x05 (x^5 + x^2 + 1)
+
+A 5-bit checksum is computed for each 13-bit somid using polynomial division.
 
 **Parameters:**
-- Polynomial: 0x05
+- Polynomial: 0x05 (x^5 + x^2 + 1)
 - Width: 5 bits
-- Initial value: 0x1F
-- Final XOR: 0x1F
-- Input reflection: true
-- Output reflection: true
+- Initial value: 0x1F (all 1s)
+- Bit order: MSB-first (bit 12 → bit 0)
 
-**Note:** Contraquants do NOT use CRC validation (only 256 possible values, both nibbles must be non-zero).
+**Error detection capability:**
+- Detects all single-bit errors
+- Detects all 2-bit errors
+- Rejects ~97% of random errors (31/32 invalid patterns)
+
+### Reference Implementation (Normative)
+
+This Python implementation is normative. All conformant implementations MUST produce identical results.
+
+```python
+def compute_checksum(somid_13bit):
+    """
+    Compute 5-bit checksum for a 13-bit somid.
+    
+    Args:
+        somid_13bit: Integer value 0-8191 (13-bit somid)
+        
+    Returns:
+        Integer value 0-31 (5-bit checksum)
+    """
+    poly = 0x05  # x^5 + x^2 + 1
+    crc = 0x1F   # Initialize to all 1s
+    
+    # Process each bit from MSB (bit 12) to LSB (bit 0)
+    for i in range(13):
+        bit = (somid_13bit >> (12 - i)) & 1
+        msb = (crc >> 4) & 1
+        crc = ((crc << 1) | bit) & 0x1F
+        if msb:
+            crc ^= poly
+    
+    return crc
+```
+
+### Canonical Test Vectors (Normative)
+
+Implementations MUST produce these exact results:
+
+| Somid (decimal) | Somid (binary)    | Checksum | Combined 18-bit        | Quant (decimal) |
+|-----------------|-------------------|----------|------------------------|-----------------|
+| 0               | 0b0000000000000   | 22       | 0b000000000000010110   | 000022          |
+| 1               | 0b0000000000001   | 23       | 0b000000000000110111   | 000055          |
+| 32              | 0b0000000100000   | 19       | 0b000000010000010011   | 001043          |
+| 100             | 0b0000001100100   | 29       | 0b000000110010011101   | 003229          |
+| 1000            | 0b0001111101000   | 18       | 0b000111110100010010   | 032018          |
+| 8191            | 0b1111111111111   | 29       | 0b111111111111111101   | 262141          |
+
+**Construction:** Combined 18-bit = (somid << 5) | checksum. The Quant is the decimal representation of this 18-bit value (Plane 0 offset = 0).
+
+**Note:** Contraquants do NOT use checksum validation (only 256 possible values, both nibbles must be non-zero).
 
 ## Plane Architecture
 
@@ -543,24 +591,24 @@ anti := [0-9a-f]{2}    # Always 2 hex digits, lowercase, both nibbles non-zero
 The notation represents set operations:
 
 ```
-@+P₁+P₂+...+Pₙ-A₁-A₂-...-Aₘ
+@+Pâ‚+Pâ‚‚+...+Pâ‚™-Aâ‚-Aâ‚‚-...-Aâ‚˜
 
 Matches body states in:
-  (P₁ ∪ P₂ ∪ ... ∪ Pₙ) \ (A₁ ∪ A₂ ∪ ... ∪ Aₘ)
+  (Pâ‚ âˆª Pâ‚‚ âˆª ... âˆª Pâ‚™) \ (Aâ‚ âˆª Aâ‚‚ âˆª ... âˆª Aâ‚˜)
 
 Where:
-  Pᵢ = states matching quant i
-  Aⱼ = states matching contraquant j
-  + = union (∪)
+  Páµ¢ = states matching quant i
+  Aâ±¼ = states matching contraquant j
+  + = union (âˆª)
   - = set difference (\)
 ```
 
 **Special case: Pure contraquants**
 ```
-@-A₁-A₂-...-Aₘ
+@-Aâ‚-Aâ‚‚-...-Aâ‚˜
 
 Matches body states in:
-  U \ (A₁ ∪ A₂ ∪ ... ∪ Aₘ)
+  U \ (Aâ‚ âˆª Aâ‚‚ âˆª ... âˆª Aâ‚˜)
 
 Where U = universal set (all possible body states)
 ```
@@ -699,37 +747,37 @@ When communicating somidic somidics verbally (e.g., over phone, during enrollmen
 **Single positive:**
 ```
 @+147293
-→ "PLUS one four seven, two nine three"
+â†’ "PLUS one four seven, two nine three"
 ```
 
 **Multiple positives:**
 ```
 @+147293+582047
-→ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven"
+â†’ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven"
 ```
 
 **Positive with anti:**
 ```
 @+147293-41
-→ "PLUS one four seven, two nine three, MINUS four one"
+â†’ "PLUS one four seven, two nine three, MINUS four one"
 ```
 
 **Multiple positives with anti:**
 ```
 @+147293+582047-cf
-→ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven, MINUS c f"
+â†’ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven, MINUS c f"
 ```
 
 **Pure anti:**
 ```
 @-cf
-→ "MINUS c f"
+â†’ "MINUS c f"
 ```
 
 **Multiple antis:**
 ```
 @+147293-41-cf
-→ "PLUS one four seven, two nine three, MINUS four one, MINUS c f"
+â†’ "PLUS one four seven, two nine three, MINUS four one, MINUS c f"
 ```
 
 ### Verification Protocol
@@ -869,7 +917,7 @@ Texture values MUST be interpreted using a type-dependent mapping consistent wit
 - Natural marks/scars: "single" or "multiple"
 - Tattoos (Type=3, Texture=2): "no_writing" or "with_writing"
 - Piercings (Type=3, Texture=3): "single" or "multiple"
-- Anomalous (Type=2, Texture≠0): "mild" or "severe"
+- Anomalous (Type=2, Textureâ‰ 0): "mild" or "severe"
 - Missing (Type=2, Texture=0): null
 
 ### Decoding Contraquants (Normative)
@@ -1036,12 +1084,12 @@ Different languages have different syntax patterns. Implementers should adapt te
 
 **Spanish example:**
 - English: "Single raised coin-sized natural mark on left wrist"
-- Spanish: "Marca natural única elevada del tamaño de una moneda en la muñeca izquierda"
+- Spanish: "Marca natural Ãºnica elevada del tamaÃ±o de una moneda en la muÃ±eca izquierda"
 - Note: Adjectives typically follow nouns in Spanish
 
 **Japanese example:**
 - English: "Natural mark on left wrist"
-- Japanese: "左手首に自然な印"
+- Japanese: "å·¦æ‰‹é¦–ã«è‡ªç„¶ãªå°"
 - Note: Location typically comes before the mark description
 
 **Arabic example:**
@@ -1110,8 +1158,8 @@ Interpretation: "I have THIS specific tattoo on my left wrist,
 ```
 
 **Verification process:**
-1. Verify the specific quant (tattoo on left wrist) ✓
-2. Scan the rest of hands+fingers+wrists for OTHER tattoos ✓
+1. Verify the specific quant (tattoo on left wrist) âœ“
+2. Scan the rest of hands+fingers+wrists for OTHER tattoos âœ“
 3. Accept if both conditions met
 
 **Implementation:**
@@ -1240,13 +1288,13 @@ def validate_contraquant_byte(value):
 ### Maximal Compaction Algorithm (Normative)
 
 A contraquant byte encodes a set of *absence claims* of the form:
-> “No marks of type(s) **T** in zone(s) **Z**.”
+> â€œNo marks of type(s) **T** in zone(s) **Z**.â€
 
 Where:
 - `zone_flags` **Z** is the low nibble (bits 0-3), interpreted as a set of up to 4 zone-groups.
 - `type_flags` **T** is the high nibble (bits 4-7), interpreted as a set of up to 4 type categories.
 
-A contraquant with `(Z, T)` semantically expands to the Cartesian product `Z × T` (up to 16 atomic claims).
+A contraquant with `(Z, T)` semantically expands to the Cartesian product `Z Ã— T` (up to 16 atomic claims).
 
 **Canonical form requirement:** Given any multiset of contraquants, implementations MUST reduce them to an equivalent set with the **minimum number of contraquants**, and MUST select a unique result.
 
@@ -1254,27 +1302,27 @@ A contraquant with `(Z, T)` semantically expands to the Cartesian product `Z × 
 1. Parse each contraquant byte into `(Z, T)`.
 2. Reject any byte with `Z=0` or `T=0`.
 3. Expand each `(Z, T)` into the set of atomic claims  
-   `S ⊆ {1,2,4,8} × {0x10,0x20,0x40,0x80}` by enumerating each set bit in `Z` and each set bit in `T`.
+   `S âŠ† {1,2,4,8} Ã— {0x10,0x20,0x40,0x80}` by enumerating each set bit in `Z` and each set bit in `T`.
 4. Let `S` be the union of atomic claims from all contraquants.
 
 #### Step 2: Minimum rectangle cover
-A single contraquant corresponds to a rectangle `Z×T` in the 4×4 atomic-claim grid.
+A single contraquant corresponds to a rectangle `ZÃ—T` in the 4Ã—4 atomic-claim grid.
 
 Canonical compaction is defined as a **minimum-cardinality rectangle cover** of `S`.
 
 Implementations MUST find a set of rectangles `R = {(Z_i, T_i)}` such that:
-- `⋃ (Z_i×T_i) = S`, and
+- `â‹ƒ (Z_iÃ—T_i) = S`, and
 - `|R|` is minimal.
 
-**Upper bound:** `|R| ≤ 4`.
+**Upper bound:** `|R| â‰¤ 4`.
 
 #### Step 3: Deterministic tie-breaking
 If multiple minimum covers exist, implementations MUST choose the one whose sorted byte list  
 `B = sorted([Z_i | T_i])` is lexicographically smallest.
 
 #### Reference search procedure (informative but deterministic)
-Given the small 4×4 domain, a straightforward search is practical and yields deterministic results:
-1. Enumerate all candidate rectangles `(Z,T)` where `Z∈{1..15}` and `T∈{0x10..0xF0 step 0x10}`.
+Given the small 4Ã—4 domain, a straightforward search is practical and yields deterministic results:
+1. Enumerate all candidate rectangles `(Z,T)` where `Zâˆˆ{1..15}` and `Tâˆˆ{0x10..0xF0 step 0x10}`.
 2. For `k` in `1..4`, enumerate combinations of `k` candidates in increasing byte order, and select the first combination whose union equals `S`.
 3. Emit those `k` bytes, sorted ascending.
 
@@ -1297,11 +1345,11 @@ Per-type zone masks:
 - C: {3,4}
 
 Row-merging yields 3 contraquants:
-- A×{1,2,3,4}, B×{1,2}, C×{3,4}
+- AÃ—{1,2,3,4}, BÃ—{1,2}, CÃ—{3,4}
 
 Minimum rectangle cover (cardinality 2):
-- (A|B)×{1,2}
-- (A|C)×{3,4}
+- (A|B)Ã—{1,2}
+- (A|C)Ã—{3,4}
 
 Canonical compaction MUST allow a type category to appear in multiple contraquants when doing so
 reduces total count.
@@ -1372,7 +1420,7 @@ Given a valid contraquant (2 hex digits), decode to this structured format:
 
 ### Example Decoding
 
-**Input quant:** `000018` (somid=0, CRC=18)
+**Input quant:** `000022` (somid=0, checksum=22)
 ```json
 {
   "zone": 0,
