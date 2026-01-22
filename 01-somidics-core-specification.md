@@ -685,6 +685,18 @@ A string is **well-formed** if and only if it matches ONE of these patterns:
 
 ## Validation Rules
 
+### Conformance Requirements
+
+A conformant implementation MUST:
+1. **Validate** - Correctly accept/reject somidic strings per the grammar and validation rules
+2. **Decode** - Parse valid somidics to the normative structured format (see Decoding Specification)
+3. **Canonicalize** - Convert valid somidics to canonical form (sorted, compacted)
+
+Implementations MAY additionally provide:
+- Natural language rendering (see Rendering Guidance - non-normative)
+- Enrollment wizards or user interfaces
+- Additional validation beyond the minimum requirements
+
 **Structure validation:**
 - Must start with `@`
 - Must have at least one component
@@ -1503,6 +1515,29 @@ All implementations MUST use these exact zone names:
 
 
 ## Exception Hierarchy (Normative)
+
+### Validation Flow
+
+Implementations SHOULD validate in this order to provide clear, specific error messages:
+
+1. **Syntax validation** → `SomidicSyntaxError`
+   - Check `@` prefix, operator format, component syntax
+   
+2. **Component parsing** → `SomidicSyntaxError`
+   - Parse quants and contraquants
+   - Validate contraquant nibbles (both non-zero)
+
+3. **Quant validation** (for each quant):
+   - Checksum → `SomidicChecksumError`
+   - Zone bounds (0-47) → `SomidicZoneError`
+   - Type-texture combination → `SomidicTextureError`
+
+4. **Canonical form validation** → `SomidicNonCanonicalError`
+   - Check sorting and compaction
+
+This ordering ensures the most basic errors (syntax) are caught first, followed by semantic errors, with canonical form checked last.
+
+## Exception Hierarchy
 
 Implementations SHOULD define the following exception types:
 
