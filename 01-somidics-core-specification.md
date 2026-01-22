@@ -543,7 +543,7 @@ component := '+' positive
            | '-' anti
 
 positive := \d{6}      # Always 6 digits, leading zeros required
-anti := [0-9a-f]{2}    # Always 2 hex digits, lowercase, both nibbles non-zero
+anti := [0-9a-fA-F]{2}    # Always 2 hex digits, both nibbles non-zero
 ```
 
 **Key principles:**
@@ -664,18 +664,16 @@ A string is **well-formed** if and only if it matches ONE of these patterns:
 1. **Prefix:** MUST begin with `@`
 2. **Components:** At least one component required
 3. **Quants:** Format `+\d{6}` (plus sign, exactly 6 decimal digits, zero-padded)
-4. **Contraquants:** Format `-[0-9a-f]{2}` (minus sign, exactly 2 lowercase hex digits)
+4. **Contraquants:** Format `-[0-9a-fA-F]{2}` (minus sign, exactly 2 hex digits)
 5. **Ordering:** All quants MUST precede all contraquants (no interleaving)
-6. **Case:** Hex digits MUST be lowercase
-7. **Whitespace:** NO whitespace permitted anywhere
-8. **Trailing:** NO trailing operators permitted
+6. **Whitespace:** NO whitespace permitted anywhere
+7. **Trailing:** NO trailing operators permitted
 
 ### Invalid Examples
 
 ```
 147293          # Missing @ prefix
 @147293         # Missing + operator
-@+147293-4F     # Uppercase hex (must be lowercase)
 @-41+147293     # Wrong order (contraquants before quants)
 @ +147293       # Whitespace not permitted
 @+147293-       # Trailing operator
@@ -717,13 +715,13 @@ Implementations MAY additionally provide:
   - Invalid: 00, 01-0f, 10-f0 (meaningless assertions)
   - Valid: 11-ff (excluding x0 and 0x patterns)
 - Must be in maximally compacted canonical form
-- Hex digits must be lowercase (canonical)
 
 **Canonical form:**
 - Positives in ascending order
 - Antis maximally compacted and in ascending order
 - Positives before antis
 - No duplicates
+- Hex digits in lowercase
 
 ### Invalid Examples
 
@@ -734,7 +732,7 @@ Implementations MAY additionally provide:
 @+-                     # Operators without values
 @+ 147293               # Whitespace
 @+582047+147293         # Wrong order (not ascending)
-@+147293-CF             # Uppercase hex (not canonical)
+@+147293-CF             # Uppercase hex (valid but not canonical - should be -cf)
 @+147293-41-42          # Not maximally compacted (should be -43)
 ```
 
@@ -1552,7 +1550,7 @@ class SomidicSyntaxError(SomidicError):
     Examples:
     - Missing @ prefix
     - Wrong component format
-    - Uppercase hex digits
+    - Invalid hex characters
     - Trailing operators
     - Whitespace present
     """
