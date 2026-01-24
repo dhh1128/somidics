@@ -4,8 +4,8 @@
 
 Somidics is a human-verifiable, equipment-free biometric identification system based on naturally occurring or intentional marks on the human body. Version 0.6 updates notation for improved clarity and adds formal decoding/rendering specifications.
 
-**Version:** 0.6 (January 2026)
-**Previous versions:** 0.4, 0.3, 0.2, 0.1 (see update documents for changes)
+**Version:** 0.7 (January 2026)
+**Previous versions:** 0.6, 0.5, 0.4, 0.3, 0.2, 0.1 (see update documents for changes)
 
 ## Core Concepts
 
@@ -125,7 +125,7 @@ Each palm/back is subdivided into thumb-side and pinky-side:
 ### Type Encoding (Bits 6-7)
 
 **00: Natural mark**
-- Mole, birthmark, freckle, discoloration, skin patch, dimple
+- Mole, birthmark, freckle, discoloration, skin patch, dimple, vitiligo
 - Present at birth or developed naturally over time
 
 **01: Scar**
