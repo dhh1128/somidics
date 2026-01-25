@@ -1,4 +1,4 @@
-# Somidics Core Specification v0.6
+# Somidics Core Specification v0.7
 
 ## Overview
 
@@ -13,25 +13,25 @@ Somidics is a human-verifiable, equipment-free biometric identification system b
 
 **Quants (Somidion Encoding):**
 ```
-Physical mark â†’ 13-bit encoding â†’ +checksum â†’ Decimal â†’ In notation
-Somidion     â†’ Somid           â†’ 18-bit  â†’ Quant   â†’ Somidic
+Physical mark → 13-bit encoding → +checksum → Decimal → In notation
+Somidion     → Somid           → 18-bit  → Quant   → Somidic
 (on body)      (0-8191)         (0-262143) (6 digits) (@+147293)
 ```
 
 **Contraquants:**
 ```
-Absence claim  â†’ 8-bit encoding â†’ Hex representation â†’ In notation
-Contrasomidion â†’ Contrasomid    â†’ Contraquant       â†’ Somidic
+Absence claim  → 8-bit encoding → Hex representation → In notation
+Contrasomidion → Contrasomid    → Contraquant       → Somidic
 (not on body)    (0-255)          (2 hex digits)      (@-41)
 ```
 
 **Combined Notation (v0.6 update):**
 ```
 @+147293-41
- â”‚ â”‚     â”‚
- â”‚ â”‚     â””â”€ Contraquant: "No tattoos on hands+wrists"
- â”‚ â””â”€â”€â”€â”€â”€â”€â”€ Quant: "Mole on left wrist"
- â””â”€â”€â”€â”€â”€â”€â”€â”€â”€ Somidic prefix (always present)
+ ↓ ↓     ↓
+ ↓ ↓     └─ Contraquant: "No tattoos on hands+wrists"
+ ↓ └─────── Quant: "Mole on left wrist"
+ └───────── Somidic prefix (always present)
 ```
 
 ### Key Properties
@@ -40,7 +40,7 @@ Contrasomidion â†’ Contrasomid    â†’ Contraquant       â†’ Somid
 - **Memorable**: Holder remembers "mole on left wrist" not "147293"
 - **Privacy-preserving**: Fuzzy matching prevents overly strong identification
 - **Optional discrimination**: Contraquants provide stronger ID at verifier's discretion
-- **Entropy target**: ~12 bits per somidion, 5-20Ã— boost with contraquants
+- **Entropy target**: ~12 bits per somidion, 5-20× boost with contraquants
 
 ## Quant Encoding (Somidions)
 
@@ -243,10 +243,10 @@ The meaning of bit 12 depends on Type and Texture context:
 4. For all other valid combinations, bit 12 provides additional discrimination
 
 **Examples:**
-- Type=00, Texture=01, Bit12=0 â†’ "Single raised natural mark"
-- Type=00, Texture=01, Bit12=1 â†’ "Cluster of raised natural marks"
-- Type=11, Texture=00, Bit12=1 â†’ "Tattoo with writing"
-- Type=10, Texture=10, Bit12=1 â†’ "Severe fused tissue"
+- Type=00, Texture=01, Bit12=0 → "Single raised natural mark"
+- Type=00, Texture=01, Bit12=1 → "Cluster of raised natural marks"
+- Type=11, Texture=00, Bit12=1 → "Tattoo with writing"
+- Type=10, Texture=10, Bit12=1 → "Severe fused tissue"
 
 **Implementation:** Decoders MUST use this table to correctly interpret bit 12.
  - see v0.3 document for full details:
@@ -379,9 +379,9 @@ Input:  -41-42-81-82
   82 = No piercings on face
 
 Compaction:
-  Step 1: Combine 0x41+0x42 â†’ 0x43 (same type, OR zones)
-  Step 2: Combine 0x81+0x82 â†’ 0x83 (same type, OR zones)
-  Step 3: Combine 0x43+0x83 â†’ 0xC3 (same zones, OR types)
+  Step 1: Combine 0x41+0x42 → 0x43 (same type, OR zones)
+  Step 2: Combine 0x81+0x82 → 0x83 (same type, OR zones)
+  Step 3: Combine 0x43+0x83 → 0xC3 (same zones, OR types)
 
 Output: -c3 (No tattoos or piercings on hands+wrists or face)
 ```
@@ -406,7 +406,7 @@ A 5-bit checksum is computed for each 13-bit somid using polynomial division.
 - Polynomial: 0x05 (x^5 + x^2 + 1)
 - Width: 5 bits
 - Initial value: 0x1F (all 1s)
-- Bit order: MSB-first (bit 12 → bit 0)
+- Bit order: MSB-first (bit 12 â†’ bit 0)
 
 **Error detection capability:**
 - Detects all single-bit errors
@@ -591,24 +591,24 @@ contra := [0-9a-fA-F]{2}    # Always 2 hex digits, both nibbles non-zero
 The notation represents set operations:
 
 ```
-@+Pâ‚+Pâ‚‚+...+Pâ‚™-Aâ‚-Aâ‚‚-...-Aâ‚˜
+@+P₁+P₂+...+Pₙ-A₁-A₂-...-Aₘ
 
 Matches body states in:
-  (Pâ‚ âˆª Pâ‚‚ âˆª ... âˆª Pâ‚™) \ (Aâ‚ âˆª Aâ‚‚ âˆª ... âˆª Aâ‚˜)
+  (P₁ ∪ P₂ ∪ ... ∪ Pₙ) \ (A₁ ∪ A₂ ∪ ... ∪ Aₘ)
 
 Where:
-  Páµ¢ = states matching quant i
-  Aâ±¼ = states matching contraquant j
-  + = union (âˆª)
+  Pᵢ = states matching quant i
+  Aⱼ = states matching contraquant j
+  + = union (∪)
   - = set difference (\)
 ```
 
 **Special case: Pure contraquants**
 ```
-@-Aâ‚-Aâ‚‚-...-Aâ‚˜
+@-A₁-A₂-...-Aₘ
 
 Matches body states in:
-  U \ (Aâ‚ âˆª Aâ‚‚ âˆª ... âˆª Aâ‚˜)
+  U \ (A₁ ∪ A₂ ∪ ... ∪ Aₘ)
 
 Where U = universal set (all possible body states)
 ```
@@ -757,37 +757,37 @@ When communicating somidic somidics verbally (e.g., over phone, during enrollmen
 **Single quant:**
 ```
 @+147293
-â†’ "PLUS one four seven, two nine three"
+→ "PLUS one four seven, two nine three"
 ```
 
 **Multiple quants:**
 ```
 @+147293+582047
-â†’ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven"
+→ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven"
 ```
 
 **quant with contraquant:**
 ```
 @+147293-41
-â†’ "PLUS one four seven, two nine three, MINUS four one"
+→ "PLUS one four seven, two nine three, MINUS four one"
 ```
 
 **Multiple quants with contraquant:**
 ```
 @+147293+582047-cf
-â†’ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven, MINUS c f"
+→ "PLUS one four seven, two nine three, PLUS five eight two, zero four seven, MINUS c f"
 ```
 
 **Pure contraquant:**
 ```
 @-cf
-â†’ "MINUS c f"
+→ "MINUS c f"
 ```
 
 **Multiple contraquant:**
 ```
 @+147293-41-cf
-â†’ "PLUS one four seven, two nine three, MINUS four one, MINUS c f"
+→ "PLUS one four seven, two nine three, MINUS four one, MINUS c f"
 ```
 
 ### Verification Protocol
@@ -927,7 +927,7 @@ Texture values MUST be interpreted using a type-dependent mapping consistent wit
 - Natural marks/scars: "single" or "multiple"
 - Tattoos (Type=3, Texture=2): "no_writing" or "with_writing"
 - Piercings (Type=3, Texture=3): "single" or "multiple"
-- Anomalous (Type=2, Textureâ‰ 0): "mild" or "severe"
+- Anomalous (Type=2, Texture≠0): "mild" or "severe"
 - Missing (Type=2, Texture=0): null
 
 ### Decoding Contraquants (Normative)
@@ -1094,12 +1094,12 @@ Different languages have different syntax patterns. Implementers should adapt te
 
 **Spanish example:**
 - English: "Single raised coin-sized natural mark on left wrist"
-- Spanish: "Marca natural Ãºnica elevada del tamaÃ±o de una moneda en la muÃ±eca izquierda"
+- Spanish: "Marca natural única elevada del tamaño de una moneda en la muñeca izquierda"
 - Note: Adjectives typically follow nouns in Spanish
 
 **Japanese example:**
 - English: "Natural mark on left wrist"
-- Japanese: "å·¦æ‰‹é¦–ã«è‡ªç„¶ãªå°"
+- Japanese: "左手首に自然な印"
 - Note: Location typically comes before the mark description
 
 **Arabic example:**
@@ -1168,8 +1168,8 @@ Interpretation: "I have THIS specific tattoo on my left wrist,
 ```
 
 **Verification process:**
-1. Verify the specific quant (tattoo on left wrist) âœ“
-2. Scan the rest of hands+fingers+wrists for OTHER tattoos âœ“
+1. Verify the specific quant (tattoo on left wrist) ✓
+2. Scan the rest of hands+fingers+wrists for OTHER tattoos ✓
 3. Accept if both conditions met
 
 **Implementation:**
@@ -1298,13 +1298,13 @@ def validate_contraquant_byte(value):
 ### Maximal Compaction Algorithm (Normative)
 
 A contraquant byte encodes a set of *absence claims* of the form:
-> â€œNo marks of type(s) **T** in zone(s) **Z**.â€
+> ─Å“No marks of type(s) **T** in zone(s) **Z**.─Â
 
 Where:
 - `zone_flags` **Z** is the low nibble (bits 0-3), interpreted as a set of up to 4 zone-groups.
 - `type_flags` **T** is the high nibble (bits 4-7), interpreted as a set of up to 4 type categories.
 
-A contraquant with `(Z, T)` semantically expands to the Cartesian product `Z Ã— T` (up to 16 atomic claims).
+A contraquant with `(Z, T)` semantically expands to the Cartesian product `Z × T` (up to 16 atomic claims).
 
 **Canonical form requirement:** Given any multiset of contraquants, implementations MUST reduce them to an equivalent set with the **minimum number of contraquants**, and MUST select a unique result.
 
@@ -1312,27 +1312,27 @@ A contraquant with `(Z, T)` semantically expands to the Cartesian product `Z Ã�
 1. Parse each contraquant byte into `(Z, T)`.
 2. Reject any byte with `Z=0` or `T=0`.
 3. Expand each `(Z, T)` into the set of atomic claims  
-   `S âŠ† {1,2,4,8} Ã— {0x10,0x20,0x40,0x80}` by enumerating each set bit in `Z` and each set bit in `T`.
+   `S ⊆ {1,2,4,8} × {0x10,0x20,0x40,0x80}` by enumerating each set bit in `Z` and each set bit in `T`.
 4. Let `S` be the union of atomic claims from all contraquants.
 
 #### Step 2: Minimum rectangle cover
-A single contraquant corresponds to a rectangle `ZÃ—T` in the 4Ã—4 atomic-claim grid.
+A single contraquant corresponds to a rectangle `Z×T` in the 4×4 atomic-claim grid.
 
 Canonical compaction is defined as a **minimum-cardinality rectangle cover** of `S`.
 
 Implementations MUST find a set of rectangles `R = {(Z_i, T_i)}` such that:
-- `â‹ƒ (Z_iÃ—T_i) = S`, and
+- `⋃ (Z_i×T_i) = S`, and
 - `|R|` is minimal.
 
-**Upper bound:** `|R| â‰¤ 4`.
+**Upper bound:** `|R| ≤ 4`.
 
 #### Step 3: Deterministic tie-breaking
 If multiple minimum covers exist, implementations MUST choose the one whose sorted byte list  
 `B = sorted([Z_i | T_i])` is lexicographically smallest.
 
 #### Reference search procedure (informative but deterministic)
-Given the small 4Ã—4 domain, a straightforward search is practical and yields deterministic results:
-1. Enumerate all candidate rectangles `(Z,T)` where `Zâˆˆ{1..15}` and `Tâˆˆ{0x10..0xF0 step 0x10}`.
+Given the small 4×4 domain, a straightforward search is practical and yields deterministic results:
+1. Enumerate all candidate rectangles `(Z,T)` where `Z∈{1..15}` and `T∈{0x10..0xF0 step 0x10}`.
 2. For `k` in `1..4`, enumerate combinations of `k` candidates in increasing byte order, and select the first combination whose union equals `S`.
 3. Emit those `k` bytes, sorted ascending.
 
@@ -1355,11 +1355,11 @@ Per-type zone masks:
 - C: {3,4}
 
 Row-merging yields 3 contraquants:
-- AÃ—{1,2,3,4}, BÃ—{1,2}, CÃ—{3,4}
+- A×{1,2,3,4}, B×{1,2}, C×{3,4}
 
 Minimum rectangle cover (cardinality 2):
-- (A|B)Ã—{1,2}
-- (A|C)Ã—{3,4}
+- (A|B)×{1,2}
+- (A|C)×{3,4}
 
 Canonical compaction MUST allow a type category to appear in multiple contraquants when doing so
 reduces total count.
@@ -1512,92 +1512,671 @@ All implementations MUST use these exact zone names:
 | 47 | neck_side_back | Neck side/back |
 
 
-## Exception Hierarchy (Normative)
 
-### Validation Flow
+# Validation and Conformance (Normative)
 
-Implementations SHOULD validate in this order to provide clear, specific error messages:
+This section defines how implementations must validate somidic strings, detect errors, and determine canonical form compliance.
 
-1. **Syntax validation** → `SomidicSyntaxError`
-   - Check `@` prefix, operator format, component syntax
+## Conformance Levels
+
+A conformant implementation MUST implement all three validation phases. Implementations MAY choose different strictness behaviors:
+
+### Minimal Conformance
+- Accepts any syntactically valid somidic
+- Performs syntax and semantic validation (Phases 1-2)
+- MAY accept non-canonical forms
+- Use case: Lenient parsers, migration tools
+
+### Standard Conformance (RECOMMENDED)
+- Accepts only canonical somidics
+- Performs all three validation phases
+- Rejects non-canonical forms with specific error
+- Use case: Production systems, verification tools
+
+### Strict Conformance
+- Performs all validation
+- Rejects test plane values (999999, 999998) by default
+- Enforces case sensitivity (lowercase hex only)
+- Use case: High-security systems
+
+## Validation Phases
+
+Validation proceeds in three distinct phases. Each phase assumes the previous phase passed.
+
+**Phase 1: Syntax Validation**
+- Checks grammar rules only
+- Uses regex matching
+- No semantic knowledge required
+- Fast rejection of malformed input
+
+**Phase 2: Semantic Validation**
+- Checks CRC-5 for quants
+- Validates zone ranges
+- Validates type-texture combinations
+- Validates contraquant nibbles
+- Requires decoding bits
+
+**Phase 3: Canonicalization**
+- Checks sorting
+- Checks compaction (contraquants)
+- Checks deduplication
+- Requires comparing against canonical form
+
+## Phase 1: Syntax Validation
+
+**Purpose:** Determine if input matches somidic grammar
+
+**Validation steps:**
+
+### 1.1 Prefix Check
+```
+RULE: Somidic MUST start with '@'
+ERROR: SomidicSyntaxError("Somidic must start with '@'")
+```
+
+### 1.2 Component Structure
+```
+RULE: Somidic MUST match ONE of these patterns:
+  Pattern A: ^@(\+\d{6})+$                    (quants only)
+  Pattern B: ^@(\+\d{6})+(-[0-9a-fA-F]{2})+$ (quants + contraquants)
+  Pattern C: ^@(-[0-9a-fA-F]{2})+$            (contraquants only)
+
+ERROR: SomidicSyntaxError("Invalid somidic format")
+```
+
+### 1.3 Component Format
+For each component:
+
+**Quant format:**
+```
+RULE: Exactly 6 decimal digits after '+'
+VALID:   @+147293
+INVALID: @+12345  (too few digits)
+INVALID: @+1472930 (too many digits)
+ERROR: SomidicSyntaxError("Quant must be exactly 6 digits")
+```
+
+**Contraquant format:**
+```
+RULE: Exactly 2 hex digits after '-'
+RULE: Hex digits must be [0-9a-fA-F] (case-insensitive at this phase)
+VALID:   @-41
+VALID:   @-CF (accepted here, may fail canonicalization)
+INVALID: @-4 (too few digits)
+INVALID: @-GH (invalid hex)
+ERROR: SomidicSyntaxError("Contraquant must be exactly 2 hex digits")
+```
+
+### 1.4 Whitespace Check
+```
+RULE: NO whitespace anywhere in somidic
+INVALID: @+ 147293
+INVALID: @ +147293
+INVALID: @+147293 -41
+ERROR: SomidicSyntaxError("Whitespace not permitted")
+```
+
+### 1.5 Trailing Operator Check
+```
+RULE: NO trailing operators
+INVALID: @+147293-
+INVALID: @+147293+
+ERROR: SomidicSyntaxError("Trailing operator not permitted")
+```
+
+### 1.6 Component Ordering
+```
+RULE: All quants MUST precede all contraquants
+VALID:   @+147293-41
+INVALID: @-41+147293
+ERROR: SomidicSyntaxError("Quants must precede contraquants")
+```
+
+**Phase 1 Output:** List of quant strings, list of contraquant strings
+
+## Phase 2: Semantic Validation
+
+**Purpose:** Verify that components encode valid somidion/contrasomidion data
+
+**For each quant:**
+
+### 2.1 Quant CRC-5 Validation
+```
+1. Extract quant value Q (6-digit decimal → 18-bit integer)
+2. Compute: somid_13 = Q >> 5
+3. Compute: checksum = Q & 0x1F
+4. Compute: expected_checksum = CRC5(somid_13)
+5. IF checksum ≠ expected_checksum:
+     ERROR: SomidicChecksumError("CRC-5 validation failed")
+```
+
+**Special handling for Plane 3 test values:**
+```
+IF Q = 999999 OR Q = 999998:
+  IF strict_mode OR NOT test_mode:
+    ERROR: SomidicPlaneError("Test plane values not permitted")
+  ELSE:
+    SKIP CRC validation (test values have no valid CRC)
+    CONTINUE to Phase 3
+```
+
+### 2.2 Zone Range Validation
+```
+1. Extract zone = somid_13 & 0x3F (bits 0-5)
+2. IF zone > 47:
+     ERROR: SomidicZoneError("Zone 48-63 are reserved")
+```
+
+### 2.3 Type-Texture Combination Validation
+```
+1. Extract type = (somid_13 >> 6) & 0x03 (bits 6-7)
+2. Extract texture = (somid_13 >> 10) & 0x03 (bits 10-11)
+3. Check valid combinations:
    
-2. **Component parsing** → `SomidicSyntaxError`
-   - Parse quants and contraquants
-   - Validate contraquant nibbles (both non-zero)
+   Type 00 (Natural) or Type 01 (Scar):
+     IF texture = 0b11:
+       ERROR: SomidicTextureError("Texture 11 invalid for natural/scar")
+   
+   Type 11 (Artificial):
+     IF texture = 0b11:
+       ERROR: SomidicTextureError("Texture 11 invalid for artificial")
+   
+   Type 10 (Missing/Anomalous):
+     ALL textures valid (no check needed)
+```
 
-3. **Quant validation** (for each quant):
-   - Checksum → `SomidicChecksumError`
-   - Zone bounds (0-47) → `SomidicZoneError`
-   - Type-texture combination → `SomidicTextureError`
+### 2.4 Special Bit Validation (Type=10, Texture=00)
+```
+IF type = 0b10 AND texture = 0b00: # Missing
+  special_bit = (somid_13 >> 12) & 0x01
+  IF special_bit ≠ 0:
+    ERROR: SomidicSpecialBitError("Special bit must be 0 for missing parts")
+```
 
-4. **Canonical form validation** → `SomidicNonCanonicalError`
-   - Check sorting and compaction
+**For each contraquant:**
 
-This ordering ensures the most basic errors (syntax) are caught first, followed by semantic errors, with canonical form checked last.
+### 2.5 Contraquant Nibble Validation
+```
+1. Parse hex string to byte value C (2 hex digits → 8-bit integer)
+2. Extract zone_nibble = C & 0x0F
+3. Extract type_nibble = C & 0xF0
+4. IF zone_nibble = 0:
+     ERROR: SomidicContraquantError("Zone nibble must be non-zero")
+5. IF type_nibble = 0:
+     ERROR: SomidicContraquantError("Type nibble must be non-zero")
+```
+
+**Phase 2 Output:** Validated list of somids (13-bit), validated list of contraquant bytes (8-bit)
+
+## Phase 3: Canonicalization Validation
+
+**Purpose:** Verify somidic is in canonical form
+
+### 3.1 Quant Canonicalization
+
+#### 3.1.1 Sorting Check
+```
+1. Extract quant values Q_1, Q_2, ..., Q_n
+2. FOR i = 1 to n-1:
+     IF Q_i >= Q_{i+1}:
+       ERROR: SomidicNonCanonicalError("Quants must be in ascending order")
+```
+
+#### 3.1.2 Duplication Check
+```
+1. FOR i = 1 to n-1:
+     IF Q_i = Q_{i+1}:
+       ERROR: SomidicNonCanonicalError("Duplicate quants not permitted")
+```
+
+### 3.2 Contraquant Canonicalization
+
+#### 3.2.1 Maximal Compaction Check
+```
+1. Expand contraquants to atomic claims:
+   FOR each contraquant C_i:
+     zone_flags = C_i & 0x0F
+     type_flags = C_i >> 4
+     Add (zone_flags, type_flags) to claim set S
+
+2. Compute minimal rectangle cover R_min (see Maximal Compaction Algorithm)
+
+3. IF |contraquants| > |R_min|:
+     ERROR: SomidicNonCanonicalError("Contraquants not maximally compacted")
+
+4. IF contraquants ≠ R_min (after sorting):
+     ERROR: SomidicNonCanonicalError("Contraquants not in canonical form")
+```
+
+**Note:** The Maximal Compaction Algorithm is defined in its own section (see "Maximal Compaction Algorithm").
+
+#### 3.2.2 Contraquant Sorting Check
+```
+1. Extract contraquant byte values C_1, C_2, ..., C_m
+2. FOR i = 1 to m-1:
+     IF C_i >= C_{i+1}:
+       ERROR: SomidicNonCanonicalError("Contraquants must be in ascending order")
+```
+
+#### 3.2.3 Case Normalization Check (Strict mode only)
+```
+IF strict_mode:
+  FOR each contraquant hex string:
+    IF contains uppercase letters:
+      ERROR: SomidicNonCanonicalError("Hex digits must be lowercase")
+```
+
+**Phase 3 Output:** Confirmation that somidic is canonical
+
+## Complete Validation Algorithm (Normative Pseudocode)
+
+```python
+def validate_somidic(somidic_string, mode='standard'):
+    """
+    Validate a somidic string according to conformance level.
+    
+    Args:
+        somidic_string: String to validate
+        mode: 'minimal', 'standard', or 'strict'
+    
+    Returns:
+        (quants, contraquants) if valid
+        
+    Raises:
+        SomidicError: Specific subclass for each error type
+    """
+    
+    # PHASE 1: SYNTAX VALIDATION
+    if not somidic_string.startswith('@'):
+        raise SomidicSyntaxError("Somidic must start with '@'")
+    
+    # Remove @ prefix
+    s = somidic_string[1:]
+    
+    # Check for whitespace
+    if ' ' in s or '\t' in s or '\n' in s:
+        raise SomidicSyntaxError("Whitespace not permitted")
+    
+    # Split into components
+    components = split_components(s)  # Using operators as delimiters
+    
+    if len(components) == 0:
+        raise SomidicSyntaxError("At least one component required")
+    
+    quants = []
+    contraquants = []
+    seen_contra = False
+    
+    for op, value in components:
+        if op == '+':
+            if seen_contra:
+                raise SomidicSyntaxError("Quants must precede contraquants")
+            if not is_6_digit_decimal(value):
+                raise SomidicSyntaxError("Quant must be exactly 6 digits")
+            quants.append(value)
+        elif op == '-':
+            seen_contra = True
+            if not is_2_hex_digits(value):
+                raise SomidicSyntaxError("Contraquant must be exactly 2 hex digits")
+            contraquants.append(value)
+        else:
+            raise SomidicSyntaxError(f"Invalid operator '{op}'")
+    
+    # PHASE 2: SEMANTIC VALIDATION
+    validated_quants = []
+    for quant_str in quants:
+        Q = int(quant_str)
+        
+        # Handle test plane
+        if Q in [999999, 999998]:
+            if mode == 'strict' or not TEST_MODE:
+                raise SomidicPlaneError("Test plane values not permitted")
+            validated_quants.append(Q)
+            continue
+        
+        # CRC validation
+        somid = Q >> 5
+        checksum = Q & 0x1F
+        expected = compute_crc5(somid)
+        if checksum != expected:
+            raise SomidicChecksumError(f"CRC-5 validation failed for {quant_str}")
+        
+        # Zone validation
+        zone = somid & 0x3F
+        if zone > 47:
+            raise SomidicZoneError(f"Zone {zone} is reserved")
+        
+        # Type-texture validation
+        type_val = (somid >> 6) & 0x03
+        texture = (somid >> 10) & 0x03
+        
+        if type_val in [0b00, 0b01] and texture == 0b11:
+            raise SomidicTextureError("Texture 11 invalid for natural/scar")
+        if type_val == 0b11 and texture == 0b11:
+            raise SomidicTextureError("Texture 11 invalid for artificial")
+        
+        # Special bit validation for missing
+        if type_val == 0b10 and texture == 0b00:
+            special = (somid >> 12) & 0x01
+            if special != 0:
+                raise SomidicSpecialBitError("Special bit must be 0 for missing")
+        
+        validated_quants.append(Q)
+    
+    validated_contraquants = []
+    for contra_str in contraquants:
+        C = int(contra_str, 16)
+        zone_nibble = C & 0x0F
+        type_nibble = C & 0xF0
+        
+        if zone_nibble == 0:
+            raise SomidicContraquantError("Zone nibble must be non-zero")
+        if type_nibble == 0:
+            raise SomidicContraquantError("Type nibble must be non-zero")
+        
+        validated_contraquants.append((contra_str, C))
+    
+    # PHASE 3: CANONICALIZATION (skip if minimal mode)
+    if mode in ['standard', 'strict']:
+        # Check quant sorting
+        for i in range(len(validated_quants) - 1):
+            if validated_quants[i] >= validated_quants[i+1]:
+                if validated_quants[i] == validated_quants[i+1]:
+                    raise SomidicNonCanonicalError("Duplicate quants")
+                else:
+                    raise SomidicNonCanonicalError("Quants not sorted")
+        
+        # Check contraquant compaction and sorting
+        if len(validated_contraquants) > 0:
+            contra_bytes = [c[1] for c in validated_contraquants]
+            
+            # Check maximal compaction
+            canonical = maximal_compaction(contra_bytes)
+            if len(canonical) != len(contra_bytes) or canonical != sorted(contra_bytes):
+                raise SomidicNonCanonicalError("Contraquants not maximally compacted")
+            
+            # Check sorting
+            for i in range(len(contra_bytes) - 1):
+                if contra_bytes[i] >= contra_bytes[i+1]:
+                    raise SomidicNonCanonicalError("Contraquants not sorted")
+        
+        # Check case (strict mode only)
+        if mode == 'strict':
+            for contra_str, _ in validated_contraquants:
+                if contra_str != contra_str.lower():
+                    raise SomidicNonCanonicalError("Hex must be lowercase")
+    
+    return validated_quants, [c[1] for c in validated_contraquants]
+```
 
 ## Exception Hierarchy
 
-Implementations SHOULD define the following exception types:
+All somidic validation errors inherit from a base exception class:
 
 ```python
 class SomidicError(ValueError):
-    """Base exception for all somidic-related errors."""
+    """Base exception for all somidic validation errors."""
     pass
+```
 
+### Syntax Errors (Phase 1)
+
+```python
 class SomidicSyntaxError(SomidicError):
-    """Raised when somidic doesn't match grammar rules.
+    """Raised when somidic violates grammar rules.
     
-    Examples:
-    - Missing @ prefix
-    - Wrong component format
-    - Invalid hex characters
-    - Trailing operators
+    Causes:
+    - Missing '@' prefix
+    - Invalid component format (not 6 decimal or 2 hex digits)
     - Whitespace present
+    - Trailing operators
+    - Invalid operator characters
+    - Wrong component ordering (contraquants before quants)
+    
+    User-facing message:
+      "This somidic code is incorrectly formatted. Please check it carefully."
     """
     pass
+```
 
+### Semantic Errors (Phase 2)
+
+```python
 class SomidicChecksumError(SomidicError):
-    """Raised when CRC-5 validation fails for a quant.
+    """Raised when CRC-5 validation fails.
     
-    The quant is well-formed but the CRC doesn't match.
+    Causes:
+    - Quant checksum doesn't match computed CRC-5
+    - Indicates typo or corruption
+    
+    User-facing message:
+      "This code appears incorrect. Please check the number carefully."
     """
     pass
 
 class SomidicZoneError(SomidicError):
-    """Raised when zone is invalid.
+    """Raised when zone value is invalid.
     
-    Examples:
-    - Zone 48-63 in public somidic (reserved)
-    - Zone > 63 (out of range)
+    Causes:
+    - Zone 48-63 (reserved zones in public somidic)
+    - Zone > 63 (impossible value)
+    
+    User-facing message:
+      "This code references an invalid body zone. Please contact the issuer."
     """
     pass
 
 class SomidicTextureError(SomidicError):
     """Raised when type-texture combination is invalid.
     
-    Examples:
-    - Type 00 or 01 with Texture 11
-    - Type 11 with Texture 11
+    Causes:
+    - Type 00/01 (natural/scar) with Texture 11
+    - Type 11 (artificial) with Texture 11
+    
+    User-facing message:
+      "This code has an invalid attribute combination. Please contact the issuer."
     """
     pass
 
-class SomidicNonCanonicalError(SomidicError):
-    """Raised when somidic is valid but not in canonical form.
+class SomidicSpecialBitError(SomidicError):
+    """Raised when special bit has invalid value.
     
-    Examples:
-    - Quants not sorted
-    - Duplicate quants
-    - Contraquants not maximally compacted
-    - Contraquants not sorted
+    Causes:
+    - Special bit = 1 for missing parts (Type=10, Texture=00)
+    
+    User-facing message:
+      "This code has an invalid attribute. Please contact the issuer."
+    """
+    pass
+
+class SomidicContraquantError(SomidicError):
+    """Raised when contraquant byte is invalid.
+    
+    Causes:
+    - Zone nibble = 0 (no zones specified)
+    - Type nibble = 0 (no types specified)
+    
+    User-facing message:
+      "This code has an invalid exclusion. Please contact the issuer."
+    """
+    pass
+
+class SomidicPlaneError(SomidicError):
+    """Raised when plane value is invalid or disallowed.
+    
+    Causes:
+    - Test plane values (999999, 999998) in production mode
+    - Reserved plane values
+    
+    User-facing message:
+      "This code is for testing only and cannot be used."
     """
     pass
 ```
 
-**Note:** Languages other than Python should follow similar patterns appropriate to their exception/error handling conventions.
+### Canonical Form Errors (Phase 3)
+
+```python
+class SomidicNonCanonicalError(SomidicError):
+    """Raised when somidic is valid but not canonical.
+    
+    Causes:
+    - Quants not in ascending order
+    - Duplicate quants present
+    - Contraquants not maximally compacted
+    - Contraquants not in ascending order
+    - Hex digits uppercase (strict mode)
+    
+    Note: This error means the somidic is semantically valid but
+    presented in non-standard form.
+    
+    User-facing message:
+      "This code is valid but not in standard form. It should be rewritten as: [canonical form]"
+    """
+    pass
+```
+
+## Validation Decision Tree
+
+```
+                    ┌─────────────┐
+                    │ Input string│
+                    └──────┬──────┘
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │ Starts with @? │
+                  └────┬───────┬───┘
+                       │ No    │ Yes
+                       ▼       ▼
+                    ERROR    Continue
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │ Has whitespace?│
+                  └────┬───────┬───┘
+                       │ Yes   │ No
+                       ▼       ▼
+                    ERROR    Continue
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │ Valid pattern? │
+                  │ (quants/antis) │
+                  └────┬───────┬───┘
+                       │ No    │ Yes
+                       ▼       ▼
+                    ERROR    Parse components
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │  For each quant│
+                  │  Check CRC-5   │
+                  └────┬───────┬───┘
+                       │ Fail  │ Pass
+                       ▼       ▼
+                    ERROR    Continue
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │  Check zone    │
+                  │  (0-47 only)   │
+                  └────┬───────┬───┘
+                       │ Fail  │ Pass
+                       ▼       ▼
+                    ERROR    Continue
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │Check type-text │
+                  │  combinations  │
+                  └────┬───────┬───┘
+                       │ Fail  │ Pass
+                       ▼       ▼
+                    ERROR    Continue
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │For each contra │
+                  │Check nibbles≠0 │
+                  └────┬───────┬───┘
+                       │ Fail  │ Pass
+                       ▼       ▼
+                    ERROR    Continue
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │If standard mode│
+                  │  Check sorted  │
+                  └────┬───────┬───┘
+                       │ Fail  │ Pass
+                       ▼       ▼
+                    ERROR    Continue
+                           │
+                           ▼
+                  ┌────────────────┐
+                  │If standard mode│
+                  │Check compacted │
+                  └────┬───────┬───┘
+                       │ Fail  │ Pass
+                       ▼       ▼
+                    ERROR    VALID!
+```
+
+## Implementation Notes
+
+### Validation Performance
+
+**Expected validation time:**
+- Phase 1 (Syntax): ~1-2 microseconds (regex matching)
+- Phase 2 (Semantic): ~10-50 microseconds per component (CRC computation)
+- Phase 3 (Canonical): ~5-20 microseconds (sorting check, compaction check)
+
+**Total:** ~20-100 microseconds for typical somidic
+
+### Early Exit Optimization
+
+Implementations SHOULD exit on first error (fail-fast) rather than collecting all errors. This provides faster feedback and simpler error reporting.
+
+### Error Message Guidelines
+
+**For end users:**
+- Keep messages simple and actionable
+- Don't expose internal validation details
+- Suggest next steps ("check the number", "contact issuer")
+
+**For developers:**
+- Include specific error type
+- Include position/component where error occurred
+- Include actual vs. expected values when helpful
+
+### Test Mode Handling
+
+The special values 999999 and 999998 require careful handling:
+
+```python
+# Default: reject test values
+validator = SomidicValidator(test_mode=False)  # raises SomidicPlaneError
+
+# Testing: accept test values
+validator = SomidicValidator(test_mode=True)   # skips CRC for 999999/999998
+```
+
+Production systems SHOULD default to `test_mode=False`.
+
 
 ## Version History
 
-**v0.6 (Current)** - January 2026
+**v0.7 (Current)** - January 2026
+- Consolidated validation into single comprehensive section
+- Added three-phase validation model (Syntax/Semantic/Canonicalization)
+- Defined conformance levels (Minimal/Standard/Strict)
+- Added complete validation algorithm pseudocode
+- Added three new exception types (SomidicSpecialBitError, SomidicContraquantError, SomidicPlaneError)
+- Added validation decision tree diagram
+- Improved error message guidance for implementers
+
+**v0.6** - January 2026
 - Updated notation: `@` prefix required, `+` for quants, `-` for contraquants
 - Separated contraquants (each preceded by `-`)
 - Added read-aloud protocol section
